@@ -3,7 +3,7 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Folder, Smartphone, PlusCircle } from "lucide-react";
+import { Folder, Smartphone, PlusCircle, BarChart } from "lucide-react"; // Adicionado BarChart
 import { mockThemes, mockSequences } from "@/data/mockData";
 
 const Dashboard = () => {

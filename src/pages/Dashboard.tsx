@@ -3,15 +3,53 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Folder, Smartphone, PlusCircle, BarChart } from "lucide-react"; // Adicionado BarChart
-import { mockThemes, mockSequences } from "@/data/mockData";
+import { Folder, Smartphone, PlusCircle, BarChart } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { Sequence, Theme } from "@/types";
 
 const Dashboard = () => {
-  const totalThemes = mockThemes.length;
-  const totalSequences = mockSequences.length;
+  const { data: themes, isLoading: isLoadingThemes, error: themesError } = useQuery<Theme[]>({
+    queryKey: ["themes"],
+    queryFn: async () => {
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      if (userError || !user?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+      const { data, error } = await supabase
+        .from("themes")
+        .select("*")
+        .eq("user_id", user.user.id);
+      if (error) throw error;
+      return data as Theme[];
+    },
+  });
 
-  const totalRetention = mockSequences.reduce((sum, seq) => sum + seq.retencao, 0);
+  const { data: sequences, isLoading: isLoadingSequences, error: sequencesError } = useQuery<Sequence[]>({
+    queryKey: ["sequences"],
+    queryFn: async () => {
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      if (userError || !user?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+      const { data, error } = await supabase
+        .from("sequences")
+        .select("*")
+        .eq("user_id", user.user.id);
+      if (error) throw error;
+      return data as Sequence[];
+    },
+  });
+
+  const totalThemes = themes?.length || 0;
+  const totalSequences = sequences?.length || 0;
+
+  const totalRetention = sequences?.reduce((sum, seq) => sum + seq.retencao, 0) || 0;
   const averageRetention = totalSequences > 0 ? (totalRetention / totalSequences).toFixed(1) : "0.0";
+
+  if (isLoadingThemes || isLoadingSequences) return <div className="text-center">Carregando dados do dashboard...</div>;
+  if (themesError) return <div className="text-center text-destructive">Erro ao carregar temas: {themesError.message}</div>;
+  if (sequencesError) return <div className="text-center text-destructive">Erro ao carregar sequências: {sequencesError.message}</div>;
 
   return (
     <div className="flex flex-col gap-6">

@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Edit, Trash2, BarChart } from "lucide-react";
+import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -30,9 +30,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Sequence, Story } from "@/types";
-import { mockSequences, mockThemes, mockStories } from "@/data/mockData"; // Using mock data for now
+import { Sequence, Story, Theme } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { showSuccess, showError } from "@/utils/toast";
 
 const deviceOptions = [
   "Combustível extra", "Desafio curto com promessa de análise", "Conversa sem privacidade",
@@ -53,12 +55,8 @@ const ctaOptions = [
 
 const SequenceDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const [sequence, setSequence] = useState<Sequence | undefined>(
-    mockSequences.find((s) => s.id === id),
-  );
-  const [stories, setStories] = useState<Story[]>(
-    mockStories.filter((s) => s.sequenceId === id).sort((a, b) => a.order - b.order),
-  );
+  const queryClient = useQueryClient();
+
   const [isStoryDialogOpen, setIsStoryDialogOpen] = useState(false);
   const [editingStory, setEditingStory] = useState<Story | null>(null);
   const [storyOrder, setStoryOrder] = useState(0);
@@ -67,6 +65,156 @@ const SequenceDetail = () => {
   const [storyCta, setStoryCta] = useState<Story["cta"]>("Nenhum");
   const [otherCta, setOtherCta] = useState("");
 
+  const { data: sequence, isLoading: isLoadingSequence, error: sequenceError } = useQuery<Sequence>({
+    queryKey: ["sequence", id],
+    queryFn: async () => {
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      if (userError || !user?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+      const { data, error } = await supabase
+        .from("sequences")
+        .select("*")
+        .eq("id", id)
+        .eq("user_id", user.user.id)
+        .single();
+      if (error) throw error;
+      return data as Sequence;
+    },
+    enabled: !!id,
+  });
+
+  const { data: themes, isLoading: isLoadingThemes, error: themesError } = useQuery<Theme[]>({
+    queryKey: ["themes"],
+    queryFn: async () => {
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      if (userError || !user?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+      const { data, error } = await supabase
+        .from("themes")
+        .select("*")
+        .eq("user_id", user.user.id);
+      if (error) throw error;
+      return data as Theme[];
+    },
+  });
+
+  const { data: stories, isLoading: isLoadingStories, error: storiesError } = useQuery<Story[]>({
+    queryKey: ["stories", id],
+    queryFn: async () => {
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      if (userError || !user?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+      const { data, error } = await supabase
+        .from("stories")
+        .select("*")
+        .eq("sequence_id", id)
+        .eq("user_id", user.user.id)
+        .order("order", { ascending: true });
+      if (error) throw error;
+      return data as Story[];
+    },
+    enabled: !!id,
+  });
+
+  const updateSequenceMetricsMutation = useMutation({
+    mutationFn: async (updatedMetrics: { views_primeiro: number; views_ultimo: number; respostas_totais: number; retencao: number }) => {
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      if (userError || !user?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+      const { data, error } = await supabase
+        .from("sequences")
+        .update(updatedMetrics)
+        .eq("id", id)
+        .eq("user_id", user.user.id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sequence", id] });
+      showSuccess("Métricas da sequência atualizadas!");
+    },
+    onError: (err) => {
+      showError(`Erro ao atualizar métricas: ${err.message}`);
+    },
+  });
+
+  const addStoryMutation = useMutation({
+    mutationFn: async (newStory: Omit<Story, "id" | "user_id">) => {
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      if (userError || !user?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+      const { data, error } = await supabase
+        .from("stories")
+        .insert({ ...newStory, user_id: user.user.id, sequence_id: id! })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["stories", id] });
+      showSuccess("Story adicionado com sucesso!");
+    },
+    onError: (err) => {
+      showError(`Erro ao adicionar story: ${err.message}`);
+    },
+  });
+
+  const updateStoryMutation = useMutation({
+    mutationFn: async (updatedStory: Story) => {
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      if (userError || !user?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+      const { data, error } = await supabase
+        .from("stories")
+        .update({ order: updatedStory.order, text: updatedStory.text, device: updatedStory.device, cta: updatedStory.cta, other_cta: updatedStory.other_cta })
+        .eq("id", updatedStory.id)
+        .eq("user_id", user.user.id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["stories", id] });
+      showSuccess("Story atualizado com sucesso!");
+    },
+    onError: (err) => {
+      showError(`Erro ao atualizar story: ${err.message}`);
+    },
+  });
+
+  const deleteStoryMutation = useMutation({
+    mutationFn: async (storyId: string) => {
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      if (userError || !user?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+      const { error } = await supabase
+        .from("stories")
+        .delete()
+        .eq("id", storyId)
+        .eq("user_id", user.user.id);
+      if (error) throw error;
+      return storyId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["stories", id] });
+      showSuccess("Story excluído com sucesso!");
+    },
+    onError: (err) => {
+      showError(`Erro ao excluir story: ${err.message}`);
+    },
+  });
+
   const [viewsPrimeiro, setViewsPrimeiro] = useState(sequence?.views_primeiro || 0);
   const [viewsUltimo, setViewsUltimo] = useState(sequence?.views_ultimo || 0);
   const [respostasTotais, setRespostasTotais] = useState(sequence?.respostas_totais || 0);
@@ -74,44 +222,72 @@ const SequenceDetail = () => {
 
   useEffect(() => {
     if (sequence) {
+      setViewsPrimeiro(sequence.views_primeiro);
+      setViewsUltimo(sequence.views_ultimo);
+      setRespostasTotais(sequence.respostas_totais);
+      setRetencao(sequence.retencao);
+    }
+  }, [sequence]);
+
+  useEffect(() => {
+    if (sequence) {
       const calculatedRetention =
         viewsPrimeiro > 0 ? (viewsUltimo / viewsPrimeiro) * 100 : 0;
-      setRetencao(parseFloat(calculatedRetention.toFixed(1)));
-      setSequence((prev) => prev ? { ...prev, views_primeiro: viewsPrimeiro, views_ultimo: viewsUltimo, respostas_totais: respostasTotais, retencao: parseFloat(calculatedRetention.toFixed(1)) } : prev);
+      const newRetencao = parseFloat(calculatedRetention.toFixed(1));
+      setRetencao(newRetencao);
+
+      if (
+        viewsPrimeiro !== sequence.views_primeiro ||
+        viewsUltimo !== sequence.views_ultimo ||
+        respostasTotais !== sequence.respostas_totais ||
+        newRetencao !== sequence.retencao
+      ) {
+        updateSequenceMetricsMutation.mutate({
+          views_primeiro: viewsPrimeiro,
+          views_ultimo: viewsUltimo,
+          respostas_totais: respostasTotais,
+          retencao: newRetencao,
+        });
+      }
     }
   }, [viewsPrimeiro, viewsUltimo, respostasTotais, sequence]);
 
-  if (!sequence) {
-    return <div className="text-center text-xl">Sequência não encontrada.</div>;
-  }
+
+  if (isLoadingSequence || isLoadingThemes || isLoadingStories) return <div className="text-center">Carregando detalhes da sequência...</div>;
+  if (sequenceError) return <div className="text-center text-destructive">Erro ao carregar sequência: {sequenceError.message}</div>;
+  if (themesError) return <div className="text-center text-destructive">Erro ao carregar temas: {themesError.message}</div>;
+  if (storiesError) return <div className="text-center text-destructive">Erro ao carregar stories: {storiesError.message}</div>;
+  if (!sequence) return <div className="text-center text-xl">Sequência não encontrada.</div>;
 
   const getThemeName = (themeId: string) => {
-    const theme = mockThemes.find((t) => t.id === themeId);
-    return theme ? (theme.category === "Outros" ? theme.otherCategory : theme.name) : "N/A";
+    const theme = themes?.find((t) => t.id === themeId);
+    return theme ? (theme.category === "Outros" ? theme.other_category : theme.name) : "N/A";
   };
 
   const handleSaveStory = () => {
-    if (!storyOrder || !storyText || !storyDevice || !storyCta) return;
+    if (!storyOrder || !storyText || !storyDevice || !storyCta) {
+      showError("Ordem, Texto, Dispositivo e CTA são obrigatórios.");
+      return;
+    }
 
     if (editingStory) {
-      setStories(
-        stories.map((s) =>
-          s.id === editingStory.id
-            ? { ...s, order: storyOrder, text: storyText, device: storyDevice, cta: storyCta, otherCta: storyCta === "Outro" ? otherCta : undefined }
-            : s,
-        ),
-      );
-    } else {
-      const newStory: Story = {
-        id: `story${stories.length + 1}`,
-        sequenceId: sequence.id,
+      updateStoryMutation.mutate({
+        ...editingStory,
         order: storyOrder,
         text: storyText,
         device: storyDevice,
         cta: storyCta,
-        otherCta: storyCta === "Outro" ? otherCta : undefined,
-      };
-      setStories([...stories, newStory].sort((a, b) => a.order - b.order));
+        other_cta: storyCta === "Outro" ? otherCta : undefined,
+      });
+    } else {
+      addStoryMutation.mutate({
+        sequence_id: sequence.id,
+        order: storyOrder,
+        text: storyText,
+        device: storyDevice,
+        cta: storyCta,
+        other_cta: storyCta === "Outro" ? otherCta : undefined,
+      });
     }
     resetStoryForm();
     setIsStoryDialogOpen(false);
@@ -123,17 +299,17 @@ const SequenceDetail = () => {
     setStoryText(story.text);
     setStoryDevice(story.device);
     setStoryCta(story.cta);
-    setOtherCta(story.otherCta || "");
+    setOtherCta(story.other_cta || "");
     setIsStoryDialogOpen(true);
   };
 
-  const handleDeleteStory = (id: string) => {
-    setStories(stories.filter((s) => s.id !== id));
+  const handleDeleteStory = (storyId: string) => {
+    deleteStoryMutation.mutate(storyId);
   };
 
   const resetStoryForm = () => {
     setEditingStory(null);
-    setStoryOrder(stories.length > 0 ? Math.max(...stories.map(s => s.order)) + 1 : 1);
+    setStoryOrder(stories && stories.length > 0 ? Math.max(...stories.map(s => s.order)) + 1 : 1);
     setStoryText("");
     setStoryDevice("Combustível extra");
     setStoryCta("Nenhum");
@@ -155,7 +331,7 @@ const SequenceDetail = () => {
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">Tema:</p>
-            <p className="text-lg">{getThemeName(sequence.themeId)}</p>
+            <p className="text-lg">{getThemeName(sequence.theme_id)}</p>
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">Tipo:</p>
@@ -189,7 +365,7 @@ const SequenceDetail = () => {
                   id="order"
                   type="number"
                   value={storyOrder}
-                  onChange={(e) => setStoryOrder(parseInt(e.target.value))}
+                  onChange={(e) => setStoryOrder(parseInt(e.target.value) || 0)}
                   className="col-span-3"
                 />
               </div>
@@ -274,12 +450,12 @@ const SequenceDetail = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {stories.map((story) => (
+            {stories?.map((story) => (
               <TableRow key={story.id}>
                 <TableCell>{story.order}</TableCell>
                 <TableCell className="max-w-[300px] truncate">{story.text}</TableCell>
                 <TableCell>{story.device}</TableCell>
-                <TableCell>{story.cta === "Outro" ? story.otherCta : story.cta}</TableCell>
+                <TableCell>{story.cta === "Outro" ? story.other_cta : story.cta}</TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="sm" onClick={() => handleEditStory(story)}>
                     <Edit className="h-4 w-4" />

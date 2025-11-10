@@ -1,8 +1,10 @@
 "use client";
 
 import React from "react";
+import { Link } from "react-router-dom"; // Adicionado Link aqui
 import { SidebarNav } from "./SidebarNav";
 import { MadeWithDyad } from "./made-with-dyad";
+import { Smartphone } from "lucide-react"; // Importar Smartphone para o título
 
 interface LayoutProps {
   children: React.ReactNode;

@@ -1,5 +1,6 @@
 export interface Theme {
-  id: string;
+  id: string; // UUID from Supabase
+  user_id: string; // User ID from Supabase auth.users
   name: string;
   category:
     | "Urgência oculta"
@@ -11,12 +12,13 @@ export interface Theme {
     | "Falta de clareza"
     | "Medo de perda"
     | "Outros";
-  otherCategory?: string; // For "Outros" category
+  other_category?: string; // For "Outros" category, changed to snake_case for Supabase
 }
 
 export interface Story {
-  id: string;
-  sequenceId: string;
+  id: string; // UUID from Supabase
+  user_id: string; // User ID from Supabase auth.users
+  sequence_id: string; // Relation to Sequence, UUID
   order: number;
   text: string;
   device:
@@ -68,13 +70,14 @@ export interface Story {
     | "Print valioso"
     | "Reagir com emoji"
     | "Outro";
-  otherCta?: string; // For "Outro" CTA
+  other_cta?: string; // For "Outro" CTA, changed to snake_case for Supabase
 }
 
 export interface Sequence {
-  id: string;
+  id: string; // UUID from Supabase
+  user_id: string; // User ID from Supabase auth.users
   name: string;
-  themeId: string; // Relation to Theme
+  theme_id: string; // Relation to Theme, UUID, changed to snake_case for Supabase
   type:
     | "Engajamento puro"
     | "Geração de consciência"

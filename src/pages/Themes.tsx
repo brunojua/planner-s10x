@@ -29,7 +29,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Theme } from "@/types";
-import { mockThemes } from "@/data/mockData"; // Using mock data for now
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { showSuccess, showError } from "@/utils/toast";
 
 const themeCategories = [
   "Urgência oculta",
@@ -44,32 +46,119 @@ const themeCategories = [
 ];
 
 const Themes = () => {
-  const [themes, setThemes] = useState<Theme[]>(mockThemes);
+  const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTheme, setEditingTheme] = useState<Theme | null>(null);
   const [themeName, setThemeName] = useState("");
   const [themeCategory, setThemeCategory] = useState<Theme["category"]>("Urgência oculta");
   const [otherCategory, setOtherCategory] = useState("");
 
+  const { data: themes, isLoading, error } = useQuery<Theme[]>({
+    queryKey: ["themes"],
+    queryFn: async () => {
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      if (userError || !user?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+      const { data, error } = await supabase
+        .from("themes")
+        .select("*")
+        .eq("user_id", user.user.id);
+      if (error) throw error;
+      return data as Theme[];
+    },
+  });
+
+  const addThemeMutation = useMutation({
+    mutationFn: async (newTheme: Omit<Theme, "id" | "user_id">) => {
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      if (userError || !user?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+      const { data, error } = await supabase
+        .from("themes")
+        .insert({ ...newTheme, user_id: user.user.id, other_category: newTheme.category === "Outros" ? newTheme.other_category : null })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["themes"] });
+      showSuccess("Tema adicionado com sucesso!");
+    },
+    onError: (err) => {
+      showError(`Erro ao adicionar tema: ${err.message}`);
+    },
+  });
+
+  const updateThemeMutation = useMutation({
+    mutationFn: async (updatedTheme: Theme) => {
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      if (userError || !user?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+      const { data, error } = await supabase
+        .from("themes")
+        .update({ name: updatedTheme.name, category: updatedTheme.category, other_category: updatedTheme.category === "Outros" ? updatedTheme.other_category : null })
+        .eq("id", updatedTheme.id)
+        .eq("user_id", user.user.id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["themes"] });
+      showSuccess("Tema atualizado com sucesso!");
+    },
+    onError: (err) => {
+      showError(`Erro ao atualizar tema: ${err.message}`);
+    },
+  });
+
+  const deleteThemeMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      if (userError || !user?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+      const { error } = await supabase
+        .from("themes")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.user.id);
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["themes"] });
+      showSuccess("Tema excluído com sucesso!");
+    },
+    onError: (err) => {
+      showError(`Erro ao excluir tema: ${err.message}`);
+    },
+  });
+
   const handleSaveTheme = () => {
-    if (!themeName || !themeCategory) return;
+    if (!themeName || !themeCategory) {
+      showError("Nome e Categoria são obrigatórios.");
+      return;
+    }
 
     if (editingTheme) {
-      setThemes(
-        themes.map((t) =>
-          t.id === editingTheme.id
-            ? { ...t, name: themeName, category: themeCategory, otherCategory: themeCategory === "Outros" ? otherCategory : undefined }
-            : t,
-        ),
-      );
-    } else {
-      const newTheme: Theme = {
-        id: String(themes.length + 1),
+      updateThemeMutation.mutate({
+        ...editingTheme,
         name: themeName,
         category: themeCategory,
-        otherCategory: themeCategory === "Outros" ? otherCategory : undefined,
-      };
-      setThemes([...themes, newTheme]);
+        other_category: themeCategory === "Outros" ? otherCategory : undefined,
+      });
+    } else {
+      addThemeMutation.mutate({
+        name: themeName,
+        category: themeCategory,
+        other_category: themeCategory === "Outros" ? otherCategory : undefined,
+      });
     }
     resetForm();
     setIsDialogOpen(false);
@@ -79,12 +168,12 @@ const Themes = () => {
     setEditingTheme(theme);
     setThemeName(theme.name);
     setThemeCategory(theme.category);
-    setOtherCategory(theme.otherCategory || "");
+    setOtherCategory(theme.other_category || "");
     setIsDialogOpen(true);
   };
 
   const handleDelete = (id: string) => {
-    setThemes(themes.filter((t) => t.id !== id));
+    deleteThemeMutation.mutate(id);
   };
 
   const resetForm = () => {
@@ -93,6 +182,9 @@ const Themes = () => {
     setThemeCategory("Urgência oculta");
     setOtherCategory("");
   };
+
+  if (isLoading) return <div className="text-center">Carregando temas...</div>;
+  if (error) return <div className="text-center text-destructive">Erro ao carregar temas: {error.message}</div>;
 
   return (
     <div className="flex flex-col gap-6">
@@ -171,10 +263,10 @@ const Themes = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {themes.map((theme) => (
+            {themes?.map((theme) => (
               <TableRow key={theme.id}>
                 <TableCell className="font-medium">{theme.name}</TableCell>
-                <TableCell>{theme.category === "Outros" ? theme.otherCategory : theme.category}</TableCell>
+                <TableCell>{theme.category === "Outros" ? theme.other_category : theme.category}</TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="sm" onClick={() => handleEdit(theme)}>
                     <Edit className="h-4 w-4" />

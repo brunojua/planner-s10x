@@ -30,7 +30,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Sequence, Theme } from "@/types";
-import { mockSequences, mockThemes } from "@/data/mockData"; // Using mock data for now
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { showSuccess, showError } from "@/utils/toast";
 
 const sequenceTypes = [
   "Engajamento puro",
@@ -49,31 +51,83 @@ const sequenceTypes = [
 
 const Sequences = () => {
   const navigate = useNavigate();
-  const [sequences, setSequences] = useState<Sequence[]>(mockSequences);
+  const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [sequenceName, setSequenceName] = useState("");
   const [selectedThemeId, setSelectedThemeId] = useState<string>("");
   const [sequenceType, setSequenceType] = useState<Sequence["type"]>("Engajamento puro");
   const [sequenceDate, setSequenceDate] = useState("");
 
-  const handleCreateSequence = () => {
-    if (!sequenceName || !selectedThemeId || !sequenceType || !sequenceDate) return;
+  const { data: sequences, isLoading: isLoadingSequences, error: sequencesError } = useQuery<Sequence[]>({
+    queryKey: ["sequences"],
+    queryFn: async () => {
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      if (userError || !user?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+      const { data, error } = await supabase
+        .from("sequences")
+        .select("*")
+        .eq("user_id", user.user.id);
+      if (error) throw error;
+      return data as Sequence[];
+    },
+  });
 
-    const newSequence: Sequence = {
-      id: `seq${sequences.length + 1}`,
+  const { data: themes, isLoading: isLoadingThemes, error: themesError } = useQuery<Theme[]>({
+    queryKey: ["themes"],
+    queryFn: async () => {
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      if (userError || !user?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+      const { data, error } = await supabase
+        .from("themes")
+        .select("*")
+        .eq("user_id", user.user.id);
+      if (error) throw error;
+      return data as Theme[];
+    },
+  });
+
+  const addSequenceMutation = useMutation({
+    mutationFn: async (newSequence: Omit<Sequence, "id" | "user_id" | "views_primeiro" | "views_ultimo" | "respostas_totais" | "retencao">) => {
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      if (userError || !user?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+      const { data, error } = await supabase
+        .from("sequences")
+        .insert({ ...newSequence, user_id: user.user.id })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (newSequence) => {
+      queryClient.invalidateQueries({ queryKey: ["sequences"] });
+      showSuccess("Sequência criada com sucesso!");
+      navigate(`/sequences/${newSequence.id}`); // Redirect to detail page
+    },
+    onError: (err) => {
+      showError(`Erro ao criar sequência: ${err.message}`);
+    },
+  });
+
+  const handleCreateSequence = () => {
+    if (!sequenceName || !selectedThemeId || !sequenceType || !sequenceDate) {
+      showError("Todos os campos são obrigatórios.");
+      return;
+    }
+
+    addSequenceMutation.mutate({
       name: sequenceName,
-      themeId: selectedThemeId,
+      theme_id: selectedThemeId,
       type: sequenceType,
       date: sequenceDate,
-      views_primeiro: 0,
-      views_ultimo: 0,
-      respostas_totais: 0,
-      retencao: 0,
-    };
-    setSequences([...sequences, newSequence]);
+    });
     resetForm();
     setIsDialogOpen(false);
-    navigate(`/sequences/${newSequence.id}`); // Redirect to detail page
   };
 
   const resetForm = () => {
@@ -84,9 +138,13 @@ const Sequences = () => {
   };
 
   const getThemeName = (themeId: string) => {
-    const theme = mockThemes.find((t) => t.id === themeId);
-    return theme ? (theme.category === "Outros" ? theme.otherCategory : theme.name) : "N/A";
+    const theme = themes?.find((t) => t.id === themeId);
+    return theme ? (theme.category === "Outros" ? theme.other_category : theme.name) : "N/A";
   };
+
+  if (isLoadingSequences || isLoadingThemes) return <div className="text-center">Carregando sequências...</div>;
+  if (sequencesError) return <div className="text-center text-destructive">Erro ao carregar sequências: {sequencesError.message}</div>;
+  if (themesError) return <div className="text-center text-destructive">Erro ao carregar temas: {themesError.message}</div>;
 
   return (
     <div className="flex flex-col gap-6">
@@ -123,7 +181,7 @@ const Sequences = () => {
                     <SelectValue placeholder="Selecione um tema" />
                   </SelectTrigger>
                   <SelectContent>
-                    {mockThemes.map((theme) => (
+                    {themes?.map((theme) => (
                       <SelectItem key={theme.id} value={theme.id}>
                         {theme.name}
                       </SelectItem>
@@ -183,10 +241,10 @@ const Sequences = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sequences.map((sequence) => (
+            {sequences?.map((sequence) => (
               <TableRow key={sequence.id}>
                 <TableCell className="font-medium">{sequence.name}</TableCell>
-                <TableCell>{getThemeName(sequence.themeId)}</TableCell>
+                <TableCell>{getThemeName(sequence.theme_id)}</TableCell>
                 <TableCell>{sequence.type}</TableCell>
                 <TableCell>{new Date(sequence.date).toLocaleDateString()}</TableCell>
                 <TableCell>{sequence.retencao.toFixed(1)}%</TableCell>

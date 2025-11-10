@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Link } from "react-router-dom"; // Adicionado: Importação do Link
 import { SidebarNav } from "./SidebarNav";
 import { MadeWithDyad } from "./made-with-dyad";
 

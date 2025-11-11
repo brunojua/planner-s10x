@@ -2,12 +2,12 @@
 
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Folder, LayoutDashboard, Smartphone, BarChart } from "lucide-react";
+import { Folder, LayoutDashboard, Smartphone, UserCircle } from "lucide-react"; // Adicionado UserCircle
 
 const navItems = [
   {
     title: "Dashboard",
-    href: "/",
+    href: "/dashboard", // Alterado para /dashboard
     icon: LayoutDashboard,
   },
   {
@@ -19,6 +19,11 @@ const navItems = [
     title: "Sequências",
     href: "/sequences",
     icon: Smartphone,
+  },
+  {
+    title: "Perfil", // Novo item de menu
+    href: "/profile",
+    icon: UserCircle,
   },
 ];
 

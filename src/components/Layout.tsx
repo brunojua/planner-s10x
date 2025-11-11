@@ -1,16 +1,29 @@
 "use client";
 
 import React from "react";
-import { Link } from "react-router-dom"; // Adicionado Link aqui
+import { Link } from "react-router-dom";
 import { SidebarNav } from "./SidebarNav";
 import { MadeWithDyad } from "./made-with-dyad";
-import { Smartphone } from "lucide-react"; // Importar Smartphone para o título
+import { Smartphone, LogOut } from "lucide-react"; // Adicionado LogOut
+import { Button } from "@/components/ui/button"; // Importar Button
+import { supabase } from "@/integrations/supabase/client"; // Importar supabase client
+import { showSuccess, showError } from "@/utils/toast"; // Importar toasts
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export function Layout({ children }: LayoutProps) {
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      showSuccess("Você foi desconectado com sucesso!");
+    } catch (error: any) {
+      showError(`Erro ao sair: ${error.message}`);
+    }
+  };
+
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <div className="hidden border-r bg-sidebar-background md:block">
@@ -23,6 +36,12 @@ export function Layout({ children }: LayoutProps) {
           </div>
           <div className="flex-1">
             <SidebarNav />
+          </div>
+          <div className="p-4 border-t"> {/* Adicionado um divisor visual */}
+            <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:text-destructive" onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Sair
+            </Button>
           </div>
           <MadeWithDyad />
         </div>

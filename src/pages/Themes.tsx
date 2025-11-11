@@ -28,6 +28,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { Theme } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -45,6 +53,8 @@ const themeCategories = [
   "Outros",
 ];
 
+const ITEMS_PER_PAGE = 10;
+
 const Themes = () => {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -52,22 +62,34 @@ const Themes = () => {
   const [themeName, setThemeName] = useState("");
   const [themeCategory, setThemeCategory] = useState<Theme["category"]>("Urgência oculta");
   const [otherCategory, setOtherCategory] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: themes, isLoading, error } = useQuery<Theme[]>({
-    queryKey: ["themes"],
+  const { data: themesData, isLoading, error } = useQuery<{ data: Theme[], count: number }>({
+    queryKey: ["themes", currentPage],
     queryFn: async () => {
       const { data: user, error: userError } = await supabase.auth.getUser();
       if (userError || !user?.user?.id) {
         throw new Error("User not authenticated");
       }
-      const { data, error } = await supabase
+
+      const from = (currentPage - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+
+      const { data, error, count } = await supabase
         .from("themes")
-        .select("*")
-        .eq("user_id", user.user.id);
+        .select("*", { count: "exact" })
+        .eq("user_id", user.user.id)
+        .order("created_at", { ascending: false })
+        .range(from, to);
+
       if (error) throw error;
-      return data as Theme[];
+      return { data: data as Theme[], count: count || 0 };
     },
   });
+
+  const themes = themesData?.data || [];
+  const totalThemes = themesData?.count || 0;
+  const totalPages = Math.ceil(totalThemes / ITEMS_PER_PAGE);
 
   const addThemeMutation = useMutation({
     mutationFn: async (newTheme: Omit<Theme, "id" | "user_id">) => {
@@ -263,23 +285,60 @@ const Themes = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {themes?.map((theme) => (
-              <TableRow key={theme.id}>
-                <TableCell className="font-medium">{theme.name}</TableCell>
-                <TableCell>{theme.category === "Outros" ? theme.other_category : theme.category}</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="sm" onClick={() => handleEdit(theme)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete(theme.id)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+            {themes.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={3} className="text-center">
+                  Nenhum tema encontrado.
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              themes.map((theme) => (
+                <TableRow key={theme.id}>
+                  <TableCell className="font-medium">{theme.name}</TableCell>
+                  <TableCell>{theme.category === "Outros" ? theme.other_category : theme.category}</TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="sm" onClick={() => handleEdit(theme)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(theme.id)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
+
+      {totalPages > 1 && (
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                isActive={currentPage > 1}
+              />
+            </PaginationItem>
+            {[...Array(totalPages)].map((_, index) => (
+              <PaginationItem key={index}>
+                <PaginationLink
+                  onClick={() => setCurrentPage(index + 1)}
+                  isActive={currentPage === index + 1}
+                >
+                  {index + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                isActive={currentPage < totalPages}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
     </div>
   );
 };

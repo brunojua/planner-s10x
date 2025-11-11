@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Edit, Trash2 } from "lucide-react";
+import { PlusCircle, Edit, Trash2, Search, Filter, RotateCcw } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -64,8 +64,18 @@ const Themes = () => {
   const [otherCategory, setOtherCategory] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Estados para pesquisa e filtro
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedFilterCategory, setSelectedFilterCategory] = useState<Theme["category"] | "all">("all");
+  const [appliedFilterCategory, setAppliedFilterCategory] = useState<Theme["category"] | "all">("all");
+
+  // Efeito para resetar a página quando o termo de pesquisa ou filtro aplicado muda
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, appliedFilterCategory]);
+
   const { data: themesData, isLoading, error } = useQuery<{ data: Theme[], count: number }>({
-    queryKey: ["themes", currentPage],
+    queryKey: ["themes", currentPage, searchTerm, appliedFilterCategory],
     queryFn: async () => {
       const { data: user, error: userError } = await supabase.auth.getUser();
       if (userError || !user?.user?.id) {
@@ -75,10 +85,20 @@ const Themes = () => {
       const from = (currentPage - 1) * ITEMS_PER_PAGE;
       const to = from + ITEMS_PER_PAGE - 1;
 
-      const { data, error, count } = await supabase
+      let query = supabase
         .from("themes")
         .select("*", { count: "exact" })
-        .eq("user_id", user.user.id)
+        .eq("user_id", user.user.id);
+
+      if (searchTerm) {
+        query = query.ilike("name", `%${searchTerm}%`);
+      }
+
+      if (appliedFilterCategory !== "all") {
+        query = query.eq("category", appliedFilterCategory);
+      }
+
+      const { data, error, count } = await query
         .order("created_at", { ascending: false })
         .range(from, to);
 
@@ -205,6 +225,17 @@ const Themes = () => {
     setOtherCategory("");
   };
 
+  const handleApplyFilter = () => {
+    setAppliedFilterCategory(selectedFilterCategory);
+  };
+
+  const handleResetFilters = () => {
+    setSearchTerm("");
+    setSelectedFilterCategory("all");
+    setAppliedFilterCategory("all");
+    setCurrentPage(1); // Reset current page as well
+  };
+
   if (isLoading) return <div className="text-center">Carregando temas...</div>;
   if (error) return <div className="text-center text-destructive">Erro ao carregar temas: {error.message}</div>;
 
@@ -273,6 +304,40 @@ const Themes = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+      </div>
+
+      {/* Search and Filter Section */}
+      <div className="flex flex-col md:flex-row gap-4 items-center">
+        <div className="relative flex-1 w-full md:w-auto">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Pesquisar tema por nome..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 w-full"
+          />
+        </div>
+        <div className="flex gap-2 w-full md:w-auto">
+          <Select value={selectedFilterCategory} onValueChange={(value: Theme["category"] | "all") => setSelectedFilterCategory(value)}>
+            <SelectTrigger className="w-full md:w-[180px]">
+              <SelectValue placeholder="Filtrar por categoria" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as Categorias</SelectItem>
+              {themeCategories.map((category) => (
+                <SelectItem key={category} value={category}>
+                  {category}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button onClick={handleApplyFilter} className="shrink-0">
+            <Filter className="mr-2 h-4 w-4" /> Filtrar
+          </Button>
+          <Button variant="outline" onClick={handleResetFilters} className="shrink-0">
+            <RotateCcw className="mr-2 h-4 w-4" /> Resetar
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-md border">

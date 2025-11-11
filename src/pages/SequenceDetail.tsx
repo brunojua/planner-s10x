@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Edit, Trash2 } from "lucide-react";
+import { PlusCircle, Edit, Trash2, BarChart3 } from "lucide-react"; // Adicionado BarChart3 para o botão de métricas
 import {
   Dialog,
   DialogContent,
@@ -64,6 +64,13 @@ const SequenceDetail = () => {
   const [storyDevice, setStoryDevice] = useState<Story["device"]>("Combustível extra");
   const [storyCta, setStoryCta] = useState<Story["cta"]>("Nenhum");
   const [otherCta, setOtherCta] = useState("");
+
+  // Estados para o dialog de métricas
+  const [isMetricsDialogOpen, setIsMetricsDialogOpen] = useState(false);
+  const [dialogViewsPrimeiro, setDialogViewsPrimeiro] = useState(0);
+  const [dialogViewsUltimo, setDialogViewsUltimo] = useState(0);
+  const [dialogRespostasTotais, setDialogRespostasTotais] = useState(0);
+  const [dialogRetencao, setDialogRetencao] = useState(0);
 
   const { data: sequence, isLoading: isLoadingSequence, error: sequenceError } = useQuery<Sequence>({
     queryKey: ["sequence", id],
@@ -138,6 +145,7 @@ const SequenceDetail = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sequence", id] });
       showSuccess("Métricas da sequência atualizadas!");
+      setIsMetricsDialogOpen(false); // Fechar o dialog após o sucesso
     },
     onError: (err) => {
       showError(`Erro ao atualizar métricas: ${err.message}`);
@@ -215,43 +223,24 @@ const SequenceDetail = () => {
     },
   });
 
-  const [viewsPrimeiro, setViewsPrimeiro] = useState(sequence?.views_primeiro || 0);
-  const [viewsUltimo, setViewsUltimo] = useState(sequence?.views_ultimo || 0);
-  const [respostasTotais, setRespostasTotais] = useState(sequence?.respostas_totais || 0);
-  const [retencao, setRetencao] = useState(sequence?.retencao || 0);
-
+  // Efeito para inicializar os estados do dialog de métricas quando a sequência é carregada
   useEffect(() => {
     if (sequence) {
-      setViewsPrimeiro(sequence.views_primeiro);
-      setViewsUltimo(sequence.views_ultimo);
-      setRespostasTotais(sequence.respostas_totais);
-      setRetencao(sequence.retencao);
+      setDialogViewsPrimeiro(sequence.views_primeiro);
+      setDialogViewsUltimo(sequence.views_ultimo);
+      setDialogRespostasTotais(sequence.respostas_totais);
+      const calculatedRetention =
+        sequence.views_primeiro > 0 ? (sequence.views_ultimo / sequence.views_primeiro) * 100 : 0;
+      setDialogRetencao(parseFloat(calculatedRetention.toFixed(1)));
     }
   }, [sequence]);
 
+  // Efeito para calcular a retenção no dialog enquanto os valores são alterados
   useEffect(() => {
-    if (sequence) {
-      const calculatedRetention =
-        viewsPrimeiro > 0 ? (viewsUltimo / viewsPrimeiro) * 100 : 0;
-      const newRetencao = parseFloat(calculatedRetention.toFixed(1));
-      setRetencao(newRetencao);
-
-      if (
-        viewsPrimeiro !== sequence.views_primeiro ||
-        viewsUltimo !== sequence.views_ultimo ||
-        respostasTotais !== sequence.respostas_totais ||
-        newRetencao !== sequence.retencao
-      ) {
-        updateSequenceMetricsMutation.mutate({
-          views_primeiro: viewsPrimeiro,
-          views_ultimo: viewsUltimo,
-          respostas_totais: respostasTotais,
-          retencao: newRetencao,
-        });
-      }
-    }
-  }, [viewsPrimeiro, viewsUltimo, respostasTotais, sequence]);
-
+    const calculatedRetention =
+      dialogViewsPrimeiro > 0 ? (dialogViewsUltimo / dialogViewsPrimeiro) * 100 : 0;
+    setDialogRetencao(parseFloat(calculatedRetention.toFixed(1)));
+  }, [dialogViewsPrimeiro, dialogViewsUltimo]);
 
   if (isLoadingSequence || isLoadingThemes || isLoadingStories) return <div className="text-center">Carregando detalhes da sequência...</div>;
   if (sequenceError) return <div className="text-center text-destructive">Erro ao carregar sequência: {sequenceError.message}</div>;
@@ -314,6 +303,15 @@ const SequenceDetail = () => {
     setStoryDevice("Combustível extra");
     setStoryCta("Nenhum");
     setOtherCta("");
+  };
+
+  const handleSaveMetrics = () => {
+    updateSequenceMetricsMutation.mutate({
+      views_primeiro: dialogViewsPrimeiro,
+      views_ultimo: dialogViewsUltimo,
+      respostas_totais: dialogRespostasTotais,
+      retencao: dialogRetencao,
+    });
   };
 
   return (
@@ -470,44 +468,82 @@ const SequenceDetail = () => {
         </Table>
       </div>
 
-      <h2 className="text-2xl font-bold mt-6">📊 Resultados da sequência</h2>
+      <div className="flex items-center justify-between mt-6">
+        <h2 className="text-2xl font-bold">📊 Resultados da sequência</h2>
+        <Dialog open={isMetricsDialogOpen} onOpenChange={setIsMetricsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <BarChart3 className="mr-2 h-4 w-4" /> Atualizar Métricas
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Atualizar Métricas da Sequência</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="dialog_views_primeiro">Views do 1° story</Label>
+                <Input
+                  id="dialog_views_primeiro"
+                  type="number"
+                  value={dialogViewsPrimeiro}
+                  onChange={(e) => setDialogViewsPrimeiro(parseInt(e.target.value) || 0)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dialog_views_ultimo">Views do último story</Label>
+                <Input
+                  id="dialog_views_ultimo"
+                  type="number"
+                  value={dialogViewsUltimo}
+                  onChange={(e) => setDialogViewsUltimo(parseInt(e.target.value) || 0)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dialog_respostas_totais">Soma de respostas</Label>
+                <Input
+                  id="dialog_respostas_totais"
+                  type="number"
+                  value={dialogRespostasTotais}
+                  onChange={(e) => setDialogRespostasTotais(parseInt(e.target.value) || 0)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Retenção Calculada</Label>
+                <div className="flex items-center h-10 px-3 py-2 rounded-md border border-input bg-background text-sm">
+                  {dialogRetencao}%
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" onClick={handleSaveMetrics}>
+                Salvar Métricas
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
       <Card>
         <CardHeader>
-          <CardTitle>Métricas</CardTitle>
+          <CardTitle>Métricas Atuais</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="views_primeiro">Views do 1° story</Label>
-            <Input
-              id="views_primeiro"
-              type="number"
-              value={viewsPrimeiro}
-              onChange={(e) => setViewsPrimeiro(parseInt(e.target.value) || 0)}
-            />
+            <Label>Views do 1° story</Label>
+            <p className="text-lg font-medium">{sequence.views_primeiro}</p>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="views_ultimo">Views do último story</Label>
-            <Input
-              id="views_ultimo"
-              type="number"
-              value={viewsUltimo}
-              onChange={(e) => setViewsUltimo(parseInt(e.target.value) || 0)}
-            />
+            <Label>Views do último story</Label>
+            <p className="text-lg font-medium">{sequence.views_ultimo}</p>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="respostas_totais">Soma de respostas</Label>
-            <Input
-              id="respostas_totais"
-              type="number"
-              value={respostasTotais}
-              onChange={(e) => setRespostasTotais(parseInt(e.target.value) || 0)}
-            />
+            <Label>Soma de respostas</Label>
+            <p className="text-lg font-medium">{sequence.respostas_totais}</p>
           </div>
           <div className="space-y-2">
             <Label>Retenção</Label>
-            <div className="flex items-center h-10 px-3 py-2 rounded-md border border-input bg-background text-sm">
-              {retencao}%
-            </div>
+            <p className="text-lg font-medium">{sequence.retencao}%</p>
           </div>
         </CardContent>
       </Card>

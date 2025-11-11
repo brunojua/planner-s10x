@@ -29,6 +29,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { Sequence, Theme } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -49,6 +57,8 @@ const sequenceTypes = [
   "Divulgação de conteúdo",
 ];
 
+const ITEMS_PER_PAGE = 10;
+
 const Sequences = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -57,22 +67,34 @@ const Sequences = () => {
   const [selectedThemeId, setSelectedThemeId] = useState<string>("");
   const [sequenceType, setSequenceType] = useState<Sequence["type"]>("Engajamento puro");
   const [sequenceDate, setSequenceDate] = useState("");
+  const [currentPage, setCurrentPage] = useState(1); // Estado para a página atual
 
-  const { data: sequences, isLoading: isLoadingSequences, error: sequencesError } = useQuery<Sequence[]>({
-    queryKey: ["sequences"],
+  const { data: sequencesData, isLoading: isLoadingSequences, error: sequencesError } = useQuery<{ data: Sequence[], count: number }>({
+    queryKey: ["sequences", currentPage], // Adicionar currentPage ao queryKey
     queryFn: async () => {
       const { data: user, error: userError } = await supabase.auth.getUser();
       if (userError || !user?.user?.id) {
         throw new Error("User not authenticated");
       }
-      const { data, error } = await supabase
+
+      const from = (currentPage - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+
+      const { data, error, count } = await supabase
         .from("sequences")
-        .select("*")
-        .eq("user_id", user.user.id);
+        .select("*", { count: "exact" }) // Obter a contagem total
+        .eq("user_id", user.user.id)
+        .order("created_at", { ascending: false })
+        .range(from, to); // Aplicar paginação
+
       if (error) throw error;
-      return data as Sequence[];
+      return { data: data as Sequence[], count: count || 0 };
     },
   });
+
+  const sequences = sequencesData?.data || [];
+  const totalSequences = sequencesData?.count || 0;
+  const totalPages = Math.ceil(totalSequences / ITEMS_PER_PAGE);
 
   const { data: themes, isLoading: isLoadingThemes, error: themesError } = useQuery<Theme[]>({
     queryKey: ["themes"],
@@ -260,6 +282,35 @@ const Sequences = () => {
           </TableBody>
         </Table>
       </div>
+
+      {totalPages > 1 && (
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                isActive={currentPage > 1}
+              />
+            </PaginationItem>
+            {[...Array(totalPages)].map((_, index) => (
+              <PaginationItem key={index}>
+                <PaginationLink
+                  onClick={() => setCurrentPage(index + 1)}
+                  isActive={currentPage === index + 1}
+                >
+                  {index + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                isActive={currentPage < totalPages}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
     </div>
   );
 };

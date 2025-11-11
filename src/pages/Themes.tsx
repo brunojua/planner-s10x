@@ -383,6 +383,7 @@ const Themes = () => {
               <PaginationPrevious
                 onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                 isActive={currentPage > 1}
+                className="cursor-pointer"
               />
             </PaginationItem>
             {[...Array(totalPages)].map((_, index) => (
@@ -390,6 +391,7 @@ const Themes = () => {
                 <PaginationLink
                   onClick={() => setCurrentPage(index + 1)}
                   isActive={currentPage === index + 1}
+                  className="cursor-pointer"
                 >
                   {index + 1}
                 </PaginationLink>
@@ -399,6 +401,7 @@ const Themes = () => {
               <PaginationNext
                 onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                 isActive={currentPage < totalPages}
+                className="cursor-pointer"
               />
             </PaginationItem>
           </PaginationContent>

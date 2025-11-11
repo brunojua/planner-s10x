@@ -23,7 +23,7 @@ const Login = () => {
                 default: {
                   colors: {
                     brand: 'hsl(var(--primary))',
-                    brandAccent: 'hsl(var(--primary-foreground))',
+                    brandAccent: 'hsl(339 70% 45%)', // Uma tonalidade mais escura da cor principal para o hover
                   },
                 },
               },

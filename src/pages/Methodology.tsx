@@ -2,7 +2,8 @@
 
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SequenceTypesDisplay } from "@/components/SequenceTypesDisplay"; // Updated import
+import { SequenceTypesDisplay } from "@/components/SequenceTypesDisplay";
+import { SocialEngineeringDevicesDisplay } from "@/components/SocialEngineeringDevicesDisplay"; // Import the new component
 
 const Methodology = () => {
   return (
@@ -21,9 +22,10 @@ const Methodology = () => {
           <SequenceTypesDisplay />
         </TabsContent>
         <TabsContent value="social-engineering-devices">
-          <p className="text-muted-foreground">
-            Conteúdo para "Dispositivos de Engenharia Social" será adicionado aqui.
+          <p className="mb-4 text-muted-foreground">
+            Explore a lista completa dos 38 dispositivos de engenharia social do Stories 10x, com explicações e exemplos práticos.
           </p>
+          <SocialEngineeringDevicesDisplay /> {/* Render the new component here */}
         </TabsContent>
       </Tabs>
     </div>

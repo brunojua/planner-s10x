@@ -2,8 +2,7 @@
 
 import React from "react";
 import { Auth } from "@supabase/auth-ui-react";
-import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { ptBR } from "@supabase/auth-ui-react/i18n/pt-BR"; // Importação corrigida
+import { ThemeSupa, ptBR } from "@supabase/auth-ui-shared"; // Importar ptBR
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 

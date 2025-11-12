@@ -3,15 +3,10 @@ export interface Theme {
   user_id: string; // User ID from Supabase auth.users
   name: string;
   category:
-    | "Urgência oculta"
-    | "Situação de identificação"
-    | "Dor principal"
-    | "Desejo oculto"
-    | "Transformação desejada"
-    | "Injustiça percebida"
-    | "Falta de clareza"
-    | "Medo de perda"
-    | "Outros";
+    | "categoria do produto"
+    | "urgência oculta"
+    | "situação de identificação"
+    | "tema livre";
   other_category?: string; // For "Outros" category, changed to snake_case for Supabase
 }
 

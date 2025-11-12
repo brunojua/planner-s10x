@@ -42,15 +42,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { showSuccess, showError } from "@/utils/toast";
 
 const themeCategories = [
-  "Urgência oculta",
-  "Situação de identificação",
-  "Dor principal",
-  "Desejo oculto",
-  "Transformação desejada",
-  "Injustiça percebida",
-  "Falta de clareza",
-  "Medo de perda",
-  "Outros",
+  "categoria do produto",
+  "urgência oculta",
+  "situação de identificação",
+  "tema livre",
 ];
 
 const ITEMS_PER_PAGE = 10;
@@ -60,8 +55,7 @@ const Themes = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTheme, setEditingTheme] = useState<Theme | null>(null);
   const [themeName, setThemeName] = useState("");
-  const [themeCategory, setThemeCategory] = useState<Theme["category"]>("Urgência oculta");
-  const [otherCategory, setOtherCategory] = useState("");
+  const [themeCategory, setThemeCategory] = useState<Theme["category"]>("urgência oculta");
   const [currentPage, setCurrentPage] = useState(1);
 
   // Estados para pesquisa e filtro
@@ -112,14 +106,14 @@ const Themes = () => {
   const totalPages = Math.ceil(totalThemes / ITEMS_PER_PAGE);
 
   const addThemeMutation = useMutation({
-    mutationFn: async (newTheme: Omit<Theme, "id" | "user_id">) => {
+    mutationFn: async (newTheme: Omit<Theme, "id" | "user_id" | "other_category">) => {
       const { data: user, error: userError } = await supabase.auth.getUser();
       if (userError || !user?.user?.id) {
         throw new Error("User not authenticated");
       }
       const { data, error } = await supabase
         .from("themes")
-        .insert({ ...newTheme, user_id: user.user.id, other_category: newTheme.category === "Outros" ? newTheme.other_category : null })
+        .insert({ ...newTheme, user_id: user.user.id })
         .select()
         .single();
       if (error) throw error;
@@ -135,14 +129,14 @@ const Themes = () => {
   });
 
   const updateThemeMutation = useMutation({
-    mutationFn: async (updatedTheme: Theme) => {
+    mutationFn: async (updatedTheme: Omit<Theme, "other_category">) => {
       const { data: user, error: userError } = await supabase.auth.getUser();
       if (userError || !user?.user?.id) {
         throw new Error("User not authenticated");
       }
       const { data, error } = await supabase
         .from("themes")
-        .update({ name: updatedTheme.name, category: updatedTheme.category, other_category: updatedTheme.category === "Outros" ? updatedTheme.other_category : null })
+        .update({ name: updatedTheme.name, category: updatedTheme.category })
         .eq("id", updatedTheme.id)
         .eq("user_id", user.user.id)
         .select()
@@ -193,13 +187,11 @@ const Themes = () => {
         ...editingTheme,
         name: themeName,
         category: themeCategory,
-        other_category: themeCategory === "Outros" ? otherCategory : undefined,
       });
     } else {
       addThemeMutation.mutate({
         name: themeName,
         category: themeCategory,
-        other_category: themeCategory === "Outros" ? otherCategory : undefined,
       });
     }
     resetForm();
@@ -210,7 +202,6 @@ const Themes = () => {
     setEditingTheme(theme);
     setThemeName(theme.name);
     setThemeCategory(theme.category);
-    setOtherCategory(theme.other_category || "");
     setIsDialogOpen(true);
   };
 
@@ -221,8 +212,7 @@ const Themes = () => {
   const resetForm = () => {
     setEditingTheme(null);
     setThemeName("");
-    setThemeCategory("Urgência oculta");
-    setOtherCategory("");
+    setThemeCategory("urgência oculta"); // Default to a new valid category
   };
 
   const handleApplyFilter = () => {
@@ -282,20 +272,6 @@ const Themes = () => {
                   </SelectContent>
                 </Select>
               </div>
-              {themeCategory === "Outros" && (
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="otherCategory" className="text-right">
-                    Especificar
-                  </Label>
-                  <Input
-                    id="otherCategory"
-                    value={otherCategory}
-                    onChange={(e) => setOtherCategory(e.target.value)}
-                    className="col-span-3"
-                    placeholder="Nome da categoria"
-                  />
-                </div>
-              )}
             </div>
             <DialogFooter>
               <Button type="submit" onClick={handleSaveTheme}>
@@ -360,7 +336,7 @@ const Themes = () => {
               themes.map((theme) => (
                 <TableRow key={theme.id}>
                   <TableCell className="font-medium">{theme.name}</TableCell>
-                  <TableCell>{theme.category === "Outros" ? theme.other_category : theme.category}</TableCell>
+                  <TableCell>{theme.category}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="sm" onClick={() => handleEdit(theme)}>
                       <Edit className="h-4 w-4" />

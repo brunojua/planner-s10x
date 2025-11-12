@@ -1,14 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { SocialEngineeringDeviceCard } from "./SocialEngineeringDeviceCard"; // Import the new card component
 
 const socialEngineeringDevicesData = [
   {
@@ -243,27 +236,16 @@ const socialEngineeringDevicesData = [
 
 export function SocialEngineeringDevicesDisplay() {
   return (
-    <div className="rounded-md border overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[50px]">Nº</TableHead>
-            <TableHead className="min-w-[150px]">Nome do Dispositivo</TableHead>
-            <TableHead className="min-w-[250px]">Explicação</TableHead>
-            <TableHead className="min-w-[250px]">Exemplo de uso</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {socialEngineeringDevicesData.map((device) => (
-            <TableRow key={device.num}>
-              <TableCell className="font-medium">{device.num}</TableCell>
-              <TableCell>{device.name}</TableCell>
-              <TableCell>{device.explanation}</TableCell>
-              <TableCell>{device.example}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {socialEngineeringDevicesData.map((device) => (
+        <SocialEngineeringDeviceCard
+          key={device.num}
+          num={device.num}
+          name={device.name}
+          explanation={device.explanation}
+          example={device.example}
+        />
+      ))}
     </div>
   );
 }

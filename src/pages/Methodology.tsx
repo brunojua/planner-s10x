@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SequenceTypesTable } from "@/components/SequenceTypesTable";
+import { SequenceTypesDisplay } from "@/components/SequenceTypesDisplay"; // Updated import
 
 const Methodology = () => {
   return (
@@ -18,7 +18,7 @@ const Methodology = () => {
           <p className="mb-4 text-muted-foreground">
             Aqui você encontra uma lista detalhada dos tipos de sequências do Stories 10x, seus objetivos, cadência e dispositivos recomendados.
           </p>
-          <SequenceTypesTable />
+          <SequenceTypesDisplay />
         </TabsContent>
         <TabsContent value="social-engineering-devices">
           <p className="text-muted-foreground">

@@ -4,16 +4,20 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { SidebarNav } from "./SidebarNav";
 import { MadeWithDyad } from "./made-with-dyad";
-import { Smartphone, LogOut } from "lucide-react"; // Adicionado LogOut
-import { Button } from "@/components/ui/button"; // Importar Button
-import { supabase } from "@/integrations/supabase/client"; // Importar supabase client
-import { showSuccess, showError } from "@/utils/toast"; // Importar toasts
+import { Smartphone, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { showSuccess, showError } from "@/utils/toast";
+import { useSession } from "@/components/SessionContextProvider"; // Importar useSession
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export function Layout({ children }: LayoutProps) {
+  const { session } = useSession(); // Obter a sessão do usuário
+  const userEmail = session?.user?.email; // Obter o email do usuário
+
   const handleLogout = async () => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -36,8 +40,13 @@ export function Layout({ children }: LayoutProps) {
           </div>
           <div className="flex-1">
             <SidebarNav />
+            {userEmail && ( // Renderiza o email se houver um usuário logado
+              <div className="px-4 py-2 text-xs text-muted-foreground">
+                {userEmail}
+              </div>
+            )}
           </div>
-          <div className="p-4 border-t"> {/* Adicionado um divisor visual */}
+          <div className="p-4 border-t">
             <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:text-destructive" onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
               Sair

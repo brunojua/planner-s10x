@@ -12,7 +12,7 @@ interface SequenceTypeCardProps {
 
 export function SequenceTypeCard({ type, objective, cadence, devices }: SequenceTypeCardProps) {
   return (
-    <Card className="h-full flex flex-col border-primary border-2 hover:shadow-lg hover:scale-[1.02] transition-all duration-200">
+    <Card className="h-full flex flex-col border-primary border-2 bg-primary/5 hover:shadow-lg hover:scale-[1.02] transition-all duration-200">
       <CardHeader>
         <CardTitle className="text-lg">{type}</CardTitle>
       </CardHeader>

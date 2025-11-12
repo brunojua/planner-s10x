@@ -11,6 +11,7 @@ import Sequences from "./pages/Sequences";
 import SequenceDetail from "./pages/SequenceDetail";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
+import Methodology from "./pages/Methodology"; // Importar a nova página
 import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 
@@ -34,6 +35,7 @@ const AppContent = () => {
             <Route path="/sequences" element={<Sequences />} />
             <Route path="/sequences/:id" element={<SequenceDetail />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/methodology" element={<Methodology />} /> {/* Nova rota */}
             <Route path="*" element={<NotFound />} /> {/* Catch-all para rotas autenticadas */}
           </Routes>
         </Layout>

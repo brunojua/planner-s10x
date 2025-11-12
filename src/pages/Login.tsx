@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Auth } from "@supabase/auth-ui-react";
-import { ThemeSupa, ptBR } from "@supabase/auth-ui-shared"; // Importar ptBR
+import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -30,7 +30,6 @@ const Login = () => {
             }}
             theme="light" // Use light theme, adjust if dark theme is preferred
             redirectTo={window.location.origin} // Redirect to root after login
-            localization={ptBR} // Adicionar localização para Português do Brasil
           />
         </CardContent>
       </Card>

@@ -40,6 +40,7 @@ import { Theme } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { showSuccess, showError } from "@/utils/toast";
+import { cn } from "@/lib/utils"; // Import cn utility for conditional class names
 
 const themeCategories = [
   "categoria do produto",
@@ -49,6 +50,22 @@ const themeCategories = [
 ];
 
 const ITEMS_PER_PAGE = 10;
+
+// Helper function to get category specific styles
+const getCategoryStyles = (category: Theme["category"]) => {
+  switch (category) {
+    case "categoria do produto":
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+    case "urgência oculta":
+      return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+    case "situação de identificação":
+      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+    case "tema livre":
+      return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
+    default:
+      return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
+  }
+};
 
 const Themes = () => {
   const queryClient = useQueryClient();
@@ -232,7 +249,7 @@ const Themes = () => {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Temas ({totalThemes})</h1> {/* Display totalThemes here */}
+        <h1 className="text-3xl font-bold">Temas ({totalThemes})</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={resetForm}>
@@ -336,7 +353,11 @@ const Themes = () => {
               themes.map((theme) => (
                 <TableRow key={theme.id}>
                   <TableCell className="font-medium">{theme.name}</TableCell>
-                  <TableCell>{theme.category}</TableCell>
+                  <TableCell>
+                    <span className={cn("px-2 py-1 rounded-full text-xs font-medium inline-flex items-center", getCategoryStyles(theme.category))}>
+                      {theme.category}
+                    </span>
+                  </TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="sm" onClick={() => handleEdit(theme)}>
                       <Edit className="h-4 w-4" />

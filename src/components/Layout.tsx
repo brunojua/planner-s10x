@@ -30,10 +30,10 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-      <div className="hidden border-r bg-sidebar md:block"> {/* CORRIGIDO: de bg-sidebar-background para bg-sidebar */}
+      <div className="hidden border-r bg-sidebar md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-            <Link to="/" className="flex items-center gap-2 font-semibold text-sidebar-primary">
+            <Link to="/" className="flex items-center gap-2 font-semibold text-sidebar-foreground"> {/* Usando text-sidebar-foreground para o título */}
               <Smartphone className="h-6 w-6" />
               <span>Planner Stories 10x</span>
             </Link>
@@ -41,7 +41,7 @@ export function Layout({ children }: LayoutProps) {
           <div className="flex-1">
             <SidebarNav />
             {userEmail && ( // Renderiza o email se houver um usuário logado
-              <div className="px-4 py-2 text-xs text-muted-foreground">
+              <div className="px-4 py-2 text-xs text-sidebar-foreground opacity-80"> {/* Alterado para text-sidebar-foreground */}
                 {userEmail}
               </div>
             )}

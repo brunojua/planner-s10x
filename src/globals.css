@@ -35,14 +35,14 @@
     --radius: 0.5rem;
 
     /* Sidebar Colors - Light Theme */
-    --sidebar-background: var(--primary); /* Fundo rosa principal */
-    --sidebar-foreground: var(--primary-foreground); /* Texto claro */
-    --sidebar-primary: var(--primary-foreground); /* Texto do item ativo (claro) */
-    --sidebar-primary-foreground: var(--primary); /* Usado para texto em fundo primário, mantido para consistência */
+    --sidebar-background: 339 76% 53%; /* Fundo rosa principal */
+    --sidebar-foreground: 210 40% 98%; /* Texto claro */
+    --sidebar-primary: 210 40% 98%; /* Texto do item ativo (claro) */
+    --sidebar-primary-foreground: 339 76% 53%; /* Usado para texto em fundo primário, mantido para consistência */
     --sidebar-accent: 0 0% 98%; /* Fundo de hover/ativo (quase branco) */
-    --sidebar-accent-foreground: var(--primary); /* Texto em fundo de hover/ativo (rosa) */
+    --sidebar-accent-foreground: 339 76% 53%; /* Texto em fundo de hover/ativo (rosa) */
     --sidebar-border: 339 76% 45%; /* Borda um pouco mais escura que o rosa principal */
-    --sidebar-ring: var(--primary);
+    --sidebar-ring: 339 76% 53%;
   }
 
   .dark {
@@ -75,14 +75,14 @@
     --ring: 212.7 26.8% 83.9%;
 
     /* Sidebar Colors - Dark Theme */
-    --sidebar-background: var(--primary); /* Fundo rosa principal */
-    --sidebar-foreground: var(--primary-foreground); /* Texto escuro */
-    --sidebar-primary: var(--primary-foreground); /* Texto do item ativo (escuro) */
-    --sidebar-primary-foreground: var(--primary); /* Usado para texto em fundo primário, mantido para consistência */
+    --sidebar-background: 339 76% 53%; /* Fundo rosa principal */
+    --sidebar-foreground: 210 40% 98%; /* Texto claro para contraste */
+    --sidebar-primary: 210 40% 98%; /* Texto do item ativo (claro) para contraste */
+    --sidebar-primary-foreground: 339 76% 53%; /* Usado para texto em fundo primário, mantido para consistência */
     --sidebar-accent: 217.2 32.6% 17.5%; /* Fundo de hover/ativo (cinza escuro) */
     --sidebar-accent-foreground: 210 40% 98%; /* Texto em fundo de hover/ativo (claro) */
     --sidebar-border: 339 76% 45%; /* Borda um pouco mais escura que o rosa principal */
-    --sidebar-ring: var(--primary);
+    --sidebar-ring: 339 76% 53%;
   }
 }
 

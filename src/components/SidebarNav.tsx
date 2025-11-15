@@ -2,7 +2,7 @@
 
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Folder, LayoutDashboard, Smartphone, UserCircle, BookOpenText } from "lucide-react"; // Adicionado BookOpenText
+import { Folder, LayoutDashboard, Smartphone, UserCircle, BookOpenText } from "lucide-react";
 
 const navItems = [
   {
@@ -42,10 +42,10 @@ export function SidebarNav() {
           key={item.href}
           to={item.href}
           className={cn(
-            "flex items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground transition-all hover:text-sidebar-primary",
+            "flex items-center gap-3 rounded-lg px-3 py-2 transition-all",
             location.pathname === item.href
-              ? "bg-sidebar-accent text-sidebar-primary"
-              : "hover:bg-sidebar-accent",
+              ? "bg-sidebar-accent text-sidebar-accent-foreground" // Fundo claro (accent) com texto rosa (accent-foreground)
+              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground", // Texto branco (foreground) com hover para fundo claro e texto rosa
           )}
         >
           <item.icon className="h-4 w-4" />

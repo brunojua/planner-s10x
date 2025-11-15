@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Table,
@@ -126,6 +126,13 @@ const Sequences = () => {
     },
   });
 
+  // Efeito para definir o tema padrão quando os temas são carregados
+  useEffect(() => {
+    if (!isLoadingThemes && themes && themes.length > 0 && !selectedThemeId) {
+      setSelectedThemeId(themes[0].id);
+    }
+  }, [themes, isLoadingThemes, selectedThemeId]);
+
   const addSequenceMutation = useMutation({
     mutationFn: async (newSequence: Omit<Sequence, "id" | "user_id" | "views_primeiro" | "views_ultimo" | "respostas_totais" | "retencao">) => {
       const { data: user, error: userError } = await supabase.auth.getUser();
@@ -204,7 +211,7 @@ const Sequences = () => {
 
   const resetForm = () => {
     setSequenceName("");
-    setSelectedThemeId("");
+    setSelectedThemeId(themes && themes.length > 0 ? themes[0].id : ""); // Define o primeiro tema como padrão se houver temas
     setSequenceType("Engajamento puro");
     setSequenceDate("");
   };

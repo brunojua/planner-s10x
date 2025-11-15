@@ -7,7 +7,6 @@ export interface Theme {
     | "urgência oculta"
     | "situação de identificação"
     | "tema livre";
-  other_category?: string; // For "Outros" category, changed to snake_case for Supabase
 }
 
 export interface Story {

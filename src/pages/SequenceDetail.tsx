@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -30,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Sequence, Story, Theme } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -250,7 +250,7 @@ const SequenceDetail = () => {
 
   const getThemeName = (themeId: string) => {
     const theme = themes?.find((t) => t.id === themeId);
-    return theme ? (theme.category === "Outros" ? theme.other_category : theme.name) : "N/A";
+    return theme ? theme.name : "N/A";
   };
 
   const handleSaveStory = () => {

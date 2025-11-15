@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { SidebarNav } from "./SidebarNav";
 import { MadeWithDyad } from "./made-with-dyad";
 import { Smartphone, LogOut, PanelLeftClose, PanelLeftOpen } from "lucide-react";
@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { useSession } from "@/components/SessionContextProvider";
-import { cn } from "@/lib/utils"; // Importar cn
+import { cn } from "@/lib/utils";
+import { getPageTitle } from "@/lib/routes"; // Importar a função de título
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -18,7 +19,10 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   const { session } = useSession();
   const userEmail = session?.user?.email;
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Estado para controlar a expansão
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const location = useLocation(); // Obter a localização atual
+  const currentTitle = getPageTitle(location.pathname); // Obter o título da página
 
   const handleLogout = async () => {
     try {
@@ -57,7 +61,7 @@ export function Layout({ children }: LayoutProps) {
               onClick={toggleSidebar} 
               className={cn(
                 "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                isSidebarOpen ? "block" : "hidden" // Esconde o botão quando colapsado para evitar redundância no layout
+                isSidebarOpen ? "block" : "hidden"
               )}
             >
               <PanelLeftClose className="h-5 w-5" />
@@ -105,7 +109,7 @@ export function Layout({ children }: LayoutProps) {
       <div className="flex flex-col">
         <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
           <h1 className="text-xl font-semibold">
-            {/* Dynamic title based on route */}
+            {currentTitle} {/* Exibe o título da página atual */}
           </h1>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">

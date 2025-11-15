@@ -2,35 +2,7 @@
 
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Folder, LayoutDashboard, Smartphone, UserCircle, BookOpenText } from "lucide-react";
-
-const navItems = [
-  {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Temas",
-    href: "/themes",
-    icon: Folder,
-  },
-  {
-    title: "Sequências",
-    href: "/sequences",
-    icon: Smartphone,
-  },
-  {
-    title: "Perfil",
-    href: "/profile",
-    icon: UserCircle,
-  },
-  {
-    title: "Metodologia", // Novo item de menu
-    href: "/methodology",
-    icon: BookOpenText, // Ícone para metodologia
-  },
-];
+import { navItems } from "@/lib/routes"; // Importar navItems do novo arquivo
 
 interface SidebarNavProps {
   isCollapsed: boolean;

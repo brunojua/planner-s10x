@@ -53,14 +53,14 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         sidebar: {
-          DEFAULT: "var(--sidebar-background)", // Corrigido para usar a variável diretamente
-          foreground: "var(--sidebar-foreground)", // Corrigido
-          primary: "var(--sidebar-primary)", // Corrigido
-          "primary-foreground": "var(--sidebar-primary-foreground)", // Corrigido
-          accent: "var(--sidebar-accent)", // Corrigido
-          "accent-foreground": "var(--sidebar-accent-foreground)", // Corrigido
-          border: "var(--sidebar-border)", // Corrigido
-          ring: "var(--sidebar-ring)", // Corrigido
+          DEFAULT: "hsl(var(--sidebar-background))", // Corrigido para usar hsl()
+          foreground: "hsl(var(--sidebar-foreground))", // Corrigido para usar hsl()
+          primary: "hsl(var(--sidebar-primary))", // Corrigido para usar hsl()
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))", // Corrigido para usar hsl()
+          accent: "hsl(var(--sidebar-accent))", // Corrigido para usar hsl()
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))", // Corrigido para usar hsl()
+          border: "hsl(var(--sidebar-border))", // Corrigido para usar hsl()
+          ring: "hsl(var(--sidebar-ring))", // Corrigido para usar hsl()
         },
       },
       borderRadius: {

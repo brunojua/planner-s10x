@@ -34,21 +34,15 @@
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sidebar Colors - Light Theme */
+    --sidebar-background: var(--primary); /* Fundo rosa principal */
+    --sidebar-foreground: var(--primary-foreground); /* Texto claro */
+    --sidebar-primary: var(--primary-foreground); /* Texto do item ativo (claro) */
+    --sidebar-primary-foreground: var(--primary); /* Usado para texto em fundo primário, mantido para consistência */
+    --sidebar-accent: 0 0% 98%; /* Fundo de hover/ativo (quase branco) */
+    --sidebar-accent-foreground: var(--primary); /* Texto em fundo de hover/ativo (rosa) */
+    --sidebar-border: 339 76% 45%; /* Borda um pouco mais escura que o rosa principal */
+    --sidebar-ring: var(--primary);
   }
 
   .dark {
@@ -79,14 +73,16 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Sidebar Colors - Dark Theme */
+    --sidebar-background: var(--primary); /* Fundo rosa principal */
+    --sidebar-foreground: var(--primary-foreground); /* Texto escuro */
+    --sidebar-primary: var(--primary-foreground); /* Texto do item ativo (escuro) */
+    --sidebar-primary-foreground: var(--primary); /* Usado para texto em fundo primário, mantido para consistência */
+    --sidebar-accent: 217.2 32.6% 17.5%; /* Fundo de hover/ativo (cinza escuro) */
+    --sidebar-accent-foreground: 210 40% 98%; /* Texto em fundo de hover/ativo (claro) */
+    --sidebar-border: 339 76% 45%; /* Borda um pouco mais escura que o rosa principal */
+    --sidebar-ring: var(--primary);
   }
 }
 

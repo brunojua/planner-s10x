@@ -1,6 +1,12 @@
 import { cn } from "@/lib/utils";
 
-export const MadeWithDyad = () => {
+interface MadeWithDyadProps {
+  isCollapsed: boolean;
+}
+
+export const MadeWithDyad = ({ isCollapsed }: MadeWithDyadProps) => {
+  if (isCollapsed) return null; // Não renderiza nada se estiver colapsado
+
   return (
     <div className="p-4 text-center">
       <a

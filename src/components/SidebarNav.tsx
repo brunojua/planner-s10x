@@ -32,7 +32,11 @@ const navItems = [
   },
 ];
 
-export function SidebarNav() {
+interface SidebarNavProps {
+  isCollapsed: boolean;
+}
+
+export function SidebarNav({ isCollapsed }: SidebarNavProps) {
   const location = useLocation();
 
   return (
@@ -42,14 +46,15 @@ export function SidebarNav() {
           key={item.href}
           to={item.href}
           className={cn(
-            "flex items-center gap-3 rounded-xl px-3 py-2 transition-all", // Alterado para rounded-xl
+            "flex items-center gap-3 rounded-xl px-3 py-2 transition-all",
             location.pathname === item.href
               ? "bg-sidebar-accent text-sidebar-accent-foreground"
               : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+            isCollapsed ? "justify-center" : "justify-start" // Centraliza o ícone quando colapsado
           )}
         >
           <item.icon className="h-4 w-4" />
-          {item.title}
+          {!isCollapsed && item.title} {/* Esconde o título quando colapsado */}
         </Link>
       ))}
     </nav>

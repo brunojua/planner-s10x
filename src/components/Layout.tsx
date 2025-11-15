@@ -44,29 +44,36 @@ export function Layout({ children }: LayoutProps) {
       <div className="hidden border-r bg-sidebar md:block transition-all duration-300">
         <div className="flex h-full max-h-screen flex-col gap-2">
           {/* Header da Sidebar */}
-          <div className={cn("flex h-14 items-center border-b px-4 lg:h-[60px]", isSidebarOpen ? "lg:px-6" : "justify-center")}>
-            {isSidebarOpen ? (
-              <Link to="/" className="flex items-center gap-2 font-semibold text-sidebar-foreground">
-                <Smartphone className="h-6 w-6" />
-                <span>Planner Stories 10x</span>
-              </Link>
-            ) : (
-              <Link to="/" className="flex items-center gap-2 font-semibold text-sidebar-foreground">
-                <Smartphone className="h-6 w-6" />
-              </Link>
-            )}
-          </div>
-
-          {/* Botão de Toggle */}
-          <div className={cn("px-4 pt-2", isSidebarOpen ? "text-right" : "text-center")}>
+          <div className={cn("flex h-14 items-center border-b px-4 lg:h-[60px]", isSidebarOpen ? "lg:px-6 justify-between" : "justify-center")}>
+            <Link to="/" className="flex items-center gap-2 font-semibold text-sidebar-foreground">
+              <Smartphone className="h-6 w-6" />
+              {isSidebarOpen && <span>Planner Stories 10x</span>}
+            </Link>
+            
+            {/* Botão de Toggle movido para o Header */}
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={toggleSidebar} 
-              className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              className={cn(
+                "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                isSidebarOpen ? "block" : "hidden" // Esconde o botão quando colapsado para evitar redundância no layout
+              )}
             >
-              {isSidebarOpen ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeftOpen className="h-5 w-5" />}
+              <PanelLeftClose className="h-5 w-5" />
             </Button>
+            
+            {/* Botão de Toggle para o estado colapsado (centralizado) */}
+            {!isSidebarOpen && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={toggleSidebar} 
+                className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              >
+                <PanelLeftOpen className="h-5 w-5" />
+              </Button>
+            )}
           </div>
 
           {/* Navegação */}

@@ -106,13 +106,13 @@ export function Layout({ children }: LayoutProps) {
       </div>
       
       {/* Main Content */}
-      <div className="flex flex-col">
+      <div className="flex flex-col h-screen"> {/* Adicionado h-screen para garantir altura total */}
         <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
           <h1 className="text-xl font-semibold">
             {currentTitle} {/* Exibe o título da página atual */}
           </h1>
         </header>
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 overflow-y-auto"> {/* Adicionado overflow-y-auto para permitir rolagem interna */}
           {children}
         </main>
       </div>

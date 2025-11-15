@@ -76,8 +76,6 @@ const Profile = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-3xl font-bold">Meu Perfil</h1>
-
       <Card>
         <CardHeader>
           <CardTitle>Atualizar Email</CardTitle>

@@ -248,11 +248,41 @@ const Themes = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Temas ({totalThemes})</h1>
+      {/* Search and Filter Section */}
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="relative flex-1 w-full md:w-auto">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Pesquisar tema por nome..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 w-full"
+          />
+        </div>
+        <div className="flex gap-2 w-full md:w-auto shrink-0">
+          <Select value={selectedFilterCategory} onValueChange={(value: Theme["category"] | "all") => setSelectedFilterCategory(value)}>
+            <SelectTrigger className="w-full md:w-[180px]">
+              <SelectValue placeholder="Filtrar por categoria" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as Categorias</SelectItem>
+              {themeCategories.map((category) => (
+                <SelectItem key={category} value={category}>
+                  {category}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button onClick={handleApplyFilter} className="shrink-0">
+            <Filter className="mr-2 h-4 w-4" /> Filtrar
+          </Button>
+          <Button variant="outline" onClick={handleResetFilters} className="shrink-0">
+            <RotateCcw className="mr-2 h-4 w-4" /> Resetar
+          </Button>
+        </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm}>
+            <Button onClick={resetForm} className="w-full md:w-auto shrink-0">
               <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Tema
             </Button>
           </DialogTrigger>
@@ -297,40 +327,6 @@ const Themes = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
-
-      {/* Search and Filter Section */}
-      <div className="flex flex-col md:flex-row gap-4 items-center">
-        <div className="relative flex-1 w-full md:w-auto">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Pesquisar tema por nome..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 w-full"
-          />
-        </div>
-        <div className="flex gap-2 w-full md:w-auto">
-          <Select value={selectedFilterCategory} onValueChange={(value: Theme["category"] | "all") => setSelectedFilterCategory(value)}>
-            <SelectTrigger className="w-full md:w-[180px]">
-              <SelectValue placeholder="Filtrar por categoria" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as Categorias</SelectItem>
-              {themeCategories.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button onClick={handleApplyFilter} className="shrink-0">
-            <Filter className="mr-2 h-4 w-4" /> Filtrar
-          </Button>
-          <Button variant="outline" onClick={handleResetFilters} className="shrink-0">
-            <RotateCcw className="mr-2 h-4 w-4" /> Resetar
-          </Button>
-        </div>
       </div>
 
       <div className="rounded-md border">

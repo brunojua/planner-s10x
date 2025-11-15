@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Eye } from "lucide-react";
+import { PlusCircle, Eye, Trash2 } from "lucide-react"; // Adicionado Trash2
 import {
   Dialog,
   DialogContent,
@@ -37,6 +37,16 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"; // Importar AlertDialog
 import { Sequence, Theme } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -67,10 +77,14 @@ const Sequences = () => {
   const [selectedThemeId, setSelectedThemeId] = useState<string>("");
   const [sequenceType, setSequenceType] = useState<Sequence["type"]>("Engajamento puro");
   const [sequenceDate, setSequenceDate] = useState("");
-  const [currentPage, setCurrentPage] = useState(1); // Estado para a página atual
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Estados para o diálogo de confirmação de exclusão
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [sequenceToDelete, setSequenceToDelete] = useState<string | null>(null);
 
   const { data: sequencesData, isLoading: isLoadingSequences, error: sequencesError } = useQuery<{ data: Sequence[], count: number }>({
-    queryKey: ["sequences", currentPage], // Adicionar currentPage ao queryKey
+    queryKey: ["sequences", currentPage],
     queryFn: async () => {
       const { data: user, error: userError } = await supabase.auth.getUser();
       if (userError || !user?.user?.id) {
@@ -82,10 +96,10 @@ const Sequences = () => {
 
       const { data, error, count } = await supabase
         .from("sequences")
-        .select("*", { count: "exact" }) // Obter a contagem total
+        .select("*", { count: "exact" })
         .eq("user_id", user.user.id)
         .order("created_at", { ascending: false })
-        .range(from, to); // Aplicar paginação
+        .range(from, to);
 
       if (error) throw error;
       return { data: data as Sequence[], count: count || 0 };
@@ -129,10 +143,35 @@ const Sequences = () => {
     onSuccess: (newSequence) => {
       queryClient.invalidateQueries({ queryKey: ["sequences"] });
       showSuccess("Sequência criada com sucesso!");
-      navigate(`/sequences/${newSequence.id}`); // Redirect to detail page
+      navigate(`/sequences/${newSequence.id}`);
     },
     onError: (err) => {
       showError(`Erro ao criar sequência: ${err.message}`);
+    },
+  });
+
+  const deleteSequenceMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      if (userError || !user?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+      const { error } = await supabase
+        .from("sequences")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.user.id);
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sequences"] });
+      showSuccess("Sequência excluída com sucesso!");
+      setSequenceToDelete(null);
+      setIsDeleteDialogOpen(false);
+    },
+    onError: (err) => {
+      showError(`Erro ao excluir sequência: ${err.message}`);
     },
   });
 
@@ -152,6 +191,17 @@ const Sequences = () => {
     setIsDialogOpen(false);
   };
 
+  const handleDeleteClick = (sequenceId: string) => {
+    setSequenceToDelete(sequenceId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (sequenceToDelete) {
+      deleteSequenceMutation.mutate(sequenceToDelete);
+    }
+  };
+
   const resetForm = () => {
     setSequenceName("");
     setSelectedThemeId("");
@@ -161,7 +211,7 @@ const Sequences = () => {
 
   const getThemeName = (themeId: string) => {
     const theme = themes?.find((t) => t.id === themeId);
-    return theme ? (theme.category === "Outros" ? theme.other_category : theme.name) : "N/A";
+    return theme ? theme.name : "N/A";
   };
 
   if (isLoadingSequences || isLoadingThemes) return <div className="text-center">Carregando sequências...</div>;
@@ -276,6 +326,9 @@ const Sequences = () => {
                       <Eye className="h-4 w-4" />
                     </Link>
                   </Button>
+                  <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(sequence.id)}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -314,6 +367,24 @@ const Sequences = () => {
           </PaginationContent>
         </Pagination>
       )}
+
+      {/* AlertDialog for delete confirmation */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Isso excluirá permanentemente esta sequência e todos os stories associados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -42,10 +42,10 @@ export function SidebarNav() {
           key={item.href}
           to={item.href}
           className={cn(
-            "flex items-center gap-3 rounded-lg px-3 py-2 transition-all",
+            "flex items-center gap-3 rounded-xl px-3 py-2 transition-all", // Alterado para rounded-xl
             location.pathname === item.href
-              ? "bg-sidebar-accent text-sidebar-accent-foreground" // Fundo claro (accent) com texto rosa (accent-foreground)
-              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground", // Texto branco (foreground) com hover para fundo claro e texto rosa
+              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
           )}
         >
           <item.icon className="h-4 w-4" />

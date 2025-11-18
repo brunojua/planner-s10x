@@ -316,7 +316,7 @@ const SequenceDetail = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-3xl font-bold tracking-tight mb-6">Detalhes da Sequência: {sequence.name}</h1>
+      {/* Título removido: <h1 className="text-3xl font-bold tracking-tight mb-6">Detalhes da Sequência: {sequence.name}</h1> */}
 
       <Card>
         <CardHeader>

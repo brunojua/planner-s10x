@@ -8,7 +8,7 @@ import { SocialEngineeringDevicesDisplay } from "@/components/SocialEngineeringD
 const Methodology = () => {
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-3xl font-bold tracking-tight mb-6">Metodologia Stories 10x</h1>
+      {/* Título removido: <h1 className="text-3xl font-bold tracking-tight mb-6">Metodologia Stories 10x</h1> */}
       
       <Tabs defaultValue="sequence-types" className="w-full">
         <TabsList className="grid w-full grid-cols-2">

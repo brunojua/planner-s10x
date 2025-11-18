@@ -227,9 +227,7 @@ const Sequences = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        {/* PageHeader removido daqui */}
-        <h1 className="text-2xl font-bold tracking-tight">Sequências</h1> {/* Reintroduzindo o título para o conteúdo */}
+      <div className="flex items-center justify-end"> {/* Ajustado para justificar o botão à direita */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={resetForm}>

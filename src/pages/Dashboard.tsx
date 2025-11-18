@@ -53,7 +53,6 @@ const Dashboard = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* PageHeader removido daqui */}
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>

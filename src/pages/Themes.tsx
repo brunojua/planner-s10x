@@ -249,8 +249,6 @@ const Themes = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* PageHeader removido daqui */}
-
       {/* Search and Filter Section */}
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="relative flex-1 w-full md:w-auto">

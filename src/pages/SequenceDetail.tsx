@@ -35,6 +35,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { showSuccess, showError } from "@/utils/toast";
+import { PageHeader } from "@/components/PageHeader"; // Import PageHeader
 
 const deviceOptions = [
   "Combustível extra", "Desafio curto com promessa de análise", "Conversa sem privacidade",
@@ -316,6 +317,8 @@ const SequenceDetail = () => {
 
   return (
     <div className="flex flex-col gap-6">
+      <PageHeader title={`Detalhes da Sequência: ${sequence.name}`} />
+
       <Card>
         <CardHeader>
           <CardTitle>Dados da Sequência</CardTitle>

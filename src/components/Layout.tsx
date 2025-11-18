@@ -22,7 +22,7 @@ export function Layout({ children }: LayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const location = useLocation(); // Obter a localização atual
-  const currentTitle = getPageTitle(location.pathname); // Obter o título da página
+  const currentTitle = getPageTitle(location.pathname); // Obter o título da página (mantido para referência, mas não usado no header)
 
   const handleLogout = async () => {
     try {
@@ -106,13 +106,11 @@ export function Layout({ children }: LayoutProps) {
       </div>
       
       {/* Main Content */}
-      <div className="flex flex-col h-screen"> {/* Adicionado h-screen para garantir altura total */}
+      <div className="flex flex-col h-screen">
         <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
-          <h1 className="text-xl font-semibold">
-            {currentTitle} {/* Exibe o título da página atual */}
-          </h1>
+          {/* O título da página será renderizado dentro do 'children' de cada página */}
         </header>
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 overflow-y-auto"> {/* Adicionado overflow-y-auto para permitir rolagem interna */}
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 overflow-y-auto">
           {children}
         </main>
       </div>

@@ -41,6 +41,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils"; // Import cn utility for conditional class names
+import { PageHeader } from "@/components/PageHeader"; // Import PageHeader
 
 const themeCategories = [
   "categoria do produto",
@@ -248,6 +249,8 @@ const Themes = () => {
 
   return (
     <div className="flex flex-col gap-6">
+      <PageHeader title="Temas" badgeContent={totalThemes} />
+
       {/* Search and Filter Section */}
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="relative flex-1 w-full md:w-auto">

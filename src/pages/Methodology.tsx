@@ -4,10 +4,13 @@ import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SequenceTypesDisplay } from "@/components/SequenceTypesDisplay";
 import { SocialEngineeringDevicesDisplay } from "@/components/SocialEngineeringDevicesDisplay"; // Import the new component
+import { PageHeader } from "@/components/PageHeader"; // Import PageHeader
 
 const Methodology = () => {
   return (
     <div className="flex flex-col gap-6">
+      <PageHeader title="Metodologia Stories 10x" />
+      
       <Tabs defaultValue="sequence-types" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="sequence-types">Tipos de Sequências</TabsTrigger>

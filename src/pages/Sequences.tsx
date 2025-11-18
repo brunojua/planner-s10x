@@ -51,6 +51,7 @@ import { Sequence, Theme } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { showSuccess, showError } from "@/utils/toast";
+import { PageHeader } from "@/components/PageHeader"; // Import PageHeader
 
 const sequenceTypes = [
   "Engajamento puro",
@@ -227,7 +228,8 @@ const Sequences = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between">
+        <PageHeader title="Sequências" badgeContent={totalSequences} />
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={resetForm}>

@@ -7,6 +7,7 @@ import { Folder, Smartphone, PlusCircle, BarChart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Sequence, Theme } from "@/types";
+import { PageHeader } from "@/components/PageHeader"; // Import PageHeader
 
 const Dashboard = () => {
   const { data: themes, isLoading: isLoadingThemes, error: themesError } = useQuery<Theme[]>({
@@ -53,6 +54,8 @@ const Dashboard = () => {
 
   return (
     <div className="flex flex-col gap-6">
+      <PageHeader title="Dashboard" />
+      
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

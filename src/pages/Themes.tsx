@@ -41,7 +41,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils"; // Import cn utility for conditional class names
-import { PageHeader } from "@/components/PageHeader"; // Import PageHeader
 
 const themeCategories = [
   "categoria do produto",
@@ -57,6 +56,7 @@ const getCategoryStyles = (category: Theme["category"]) => {
   switch (category) {
     case "categoria do produto":
       return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+    case "urgência oculta":
     case "urgência oculta":
       return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
     case "situação de identificação":
@@ -249,7 +249,7 @@ const Themes = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Temas" badgeContent={totalThemes} />
+      {/* PageHeader removido daqui */}
 
       {/* Search and Filter Section */}
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between">

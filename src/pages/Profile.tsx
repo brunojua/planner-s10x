@@ -12,7 +12,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { useSession } from "@/components/SessionContextProvider";
-import { PageHeader } from "@/components/PageHeader"; // Import PageHeader
 
 // Schema para o formulário de atualização de email
 const emailFormSchema = z.object({
@@ -77,7 +76,7 @@ const Profile = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Perfil" />
+      <h1 className="text-3xl font-bold tracking-tight mb-6">Perfil</h1>
 
       <Card>
         <CardHeader>

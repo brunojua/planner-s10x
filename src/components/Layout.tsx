@@ -11,6 +11,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import { useSession } from "@/components/SessionContextProvider";
 import { cn } from "@/lib/utils";
 import { getPageTitle } from "@/lib/routes"; // Importar a função de título
+import { ThemeCountHeader } from "./ThemeCountHeader"; // Importar o novo componente
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -22,7 +23,7 @@ export function Layout({ children }: LayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const location = useLocation(); // Obter a localização atual
-  const currentTitle = getPageTitle(location.pathname); // Obter o título da página (mantido para referência, mas não usado no header)
+  const currentTitle = getPageTitle(location.pathname); // Obter o título da página
 
   const handleLogout = async () => {
     try {
@@ -41,6 +42,8 @@ export function Layout({ children }: LayoutProps) {
   // Classes de largura condicional
   const sidebarWidthClass = isSidebarOpen ? "md:grid-cols-[280px_1fr]" : "md:grid-cols-[80px_1fr]";
   const sidebarHiddenClass = isSidebarOpen ? "" : "hidden";
+  
+  const isThemesPage = location.pathname === "/themes";
 
   return (
     <div className={cn("grid min-h-screen w-full", sidebarWidthClass)}>
@@ -108,7 +111,10 @@ export function Layout({ children }: LayoutProps) {
       {/* Main Content */}
       <div className="flex flex-col h-screen">
         <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
-          {/* O título da página será renderizado dentro do 'children' de cada página */}
+          <h1 className="text-xl font-semibold flex items-center gap-2">
+            {currentTitle}
+            {isThemesPage && <ThemeCountHeader />} {/* Renderiza o badge apenas na página de Temas */}
+          </h1>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 overflow-y-auto">
           {children}

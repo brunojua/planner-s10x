@@ -74,7 +74,7 @@ const Sequences = () => {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [sequenceName, setSequenceName] = useState("");
-  const [selectedThemeId, setSelectedThemeId] = useState<string>("");
+  const [selectedThemeId, setSelectedThemeId] = useState<string | undefined>(undefined); // Alterado para undefined
   const [sequenceType, setSequenceType] = useState<Sequence["type"]>("Engajamento puro");
   const [sequenceDate, setSequenceDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -128,7 +128,7 @@ const Sequences = () => {
 
   // Efeito para definir o tema padrão quando os temas são carregados
   useEffect(() => {
-    if (!isLoadingThemes && themes && themes.length > 0 && !selectedThemeId) {
+    if (!isLoadingThemes && themes && themes.length > 0 && selectedThemeId === undefined) {
       setSelectedThemeId(themes[0].id);
     }
   }, [themes, isLoadingThemes, selectedThemeId]);
@@ -211,7 +211,8 @@ const Sequences = () => {
 
   const resetForm = () => {
     setSequenceName("");
-    setSelectedThemeId(themes && themes.length > 0 ? themes[0].id : ""); // Define o primeiro tema como padrão se houver temas
+    // Se houver temas, define o primeiro como padrão, senão, undefined
+    setSelectedThemeId(themes && themes.length > 0 ? themes[0].id : undefined); 
     setSequenceType("Engajamento puro");
     setSequenceDate("");
   };
@@ -221,16 +222,18 @@ const Sequences = () => {
     return theme ? theme.name : "N/A";
   };
 
+  const hasThemes = themes && themes.length > 0;
+
   if (isLoadingSequences || isLoadingThemes) return <div className="text-center">Carregando sequências...</div>;
   if (sequencesError) return <div className="text-center text-destructive">Erro ao carregar sequências: {sequencesError.message}</div>;
   if (themesError) return <div className="text-center text-destructive">Erro ao carregar temas: {themesError.message}</div>;
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-end"> {/* Ajustado para justificar o botão à direita */}
+      <div className="flex items-center justify-end">
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm}>
+            <Button onClick={resetForm} disabled={!hasThemes}>
               <PlusCircle className="mr-2 h-4 w-4" /> Criar nova Sequência
             </Button>
           </DialogTrigger>
@@ -239,6 +242,12 @@ const Sequences = () => {
               <DialogTitle>Criar Nova Sequência</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
+              {!hasThemes && (
+                <div className="col-span-4 text-center p-4 bg-yellow-100 text-yellow-800 rounded-md">
+                  Você precisa cadastrar pelo menos um tema antes de criar uma sequência.
+                  <Link to="/themes" className="text-blue-600 hover:underline ml-2">Ir para Temas</Link>
+                </div>
+              )}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="name" className="text-right">
                   Nome
@@ -248,13 +257,18 @@ const Sequences = () => {
                   value={sequenceName}
                   onChange={(e) => setSequenceName(e.target.value)}
                   className="col-span-3"
+                  disabled={!hasThemes}
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="theme" className="text-right">
                   Tema
                 </Label>
-                <Select value={selectedThemeId} onValueChange={setSelectedThemeId}>
+                <Select 
+                  value={selectedThemeId} 
+                  onValueChange={setSelectedThemeId}
+                  disabled={!hasThemes}
+                >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Selecione um tema" />
                   </SelectTrigger>
@@ -271,7 +285,11 @@ const Sequences = () => {
                 <Label htmlFor="type" className="text-right">
                   Tipo
                 </Label>
-                <Select value={sequenceType} onValueChange={(value: Sequence["type"]) => setSequenceType(value)}>
+                <Select 
+                  value={sequenceType} 
+                  onValueChange={(value: Sequence["type"]) => setSequenceType(value)}
+                  disabled={!hasThemes}
+                >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Selecione o tipo de sequência" />
                   </SelectTrigger>
@@ -294,11 +312,12 @@ const Sequences = () => {
                   value={sequenceDate}
                   onChange={(e) => setSequenceDate(e.target.value)}
                   className="col-span-3"
+                  disabled={!hasThemes}
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" onClick={handleCreateSequence}>
+              <Button type="submit" onClick={handleCreateSequence} disabled={!hasThemes}>
                 Salvar
               </Button>
             </DialogFooter>

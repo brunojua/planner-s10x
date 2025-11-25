@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Eye, Trash2 } from "lucide-react"; // Adicionado Trash2
+import { PlusCircle, Eye, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -46,7 +46,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"; // Importar AlertDialog
+} from "@/components/ui/alert-dialog";
 import { Sequence, Theme } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -74,7 +74,7 @@ const Sequences = () => {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [sequenceName, setSequenceName] = useState("");
-  const [selectedThemeId, setSelectedThemeId] = useState<string | undefined>(undefined); // Alterado para undefined
+  const [selectedThemeId, setSelectedThemeId] = useState<string | undefined>(undefined);
   const [sequenceType, setSequenceType] = useState<Sequence["type"]>("Engajamento puro");
   const [sequenceDate, setSequenceDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -82,6 +82,9 @@ const Sequences = () => {
   // Estados para o diálogo de confirmação de exclusão
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [sequenceToDelete, setSequenceToDelete] = useState<string | null>(null);
+  
+  // Estado para o diálogo de aviso de temas
+  const [isThemeWarningOpen, setIsThemeWarningOpen] = useState(false);
 
   const { data: sequencesData, isLoading: isLoadingSequences, error: sequencesError } = useQuery<{ data: Sequence[], count: number }>({
     queryKey: ["sequences", currentPage],
@@ -126,12 +129,14 @@ const Sequences = () => {
     },
   });
 
+  const hasThemes = themes && themes.length > 0;
+
   // Efeito para definir o tema padrão quando os temas são carregados
   useEffect(() => {
-    if (!isLoadingThemes && themes && themes.length > 0 && selectedThemeId === undefined) {
+    if (!isLoadingThemes && hasThemes && selectedThemeId === undefined) {
       setSelectedThemeId(themes[0].id);
     }
-  }, [themes, isLoadingThemes, selectedThemeId]);
+  }, [themes, isLoadingThemes, selectedThemeId, hasThemes]);
 
   const addSequenceMutation = useMutation({
     mutationFn: async (newSequence: Omit<Sequence, "id" | "user_id" | "views_primeiro" | "views_ultimo" | "respostas_totais" | "retencao">) => {
@@ -212,7 +217,7 @@ const Sequences = () => {
   const resetForm = () => {
     setSequenceName("");
     // Se houver temas, define o primeiro como padrão, senão, undefined
-    setSelectedThemeId(themes && themes.length > 0 ? themes[0].id : undefined); 
+    setSelectedThemeId(hasThemes ? themes[0].id : undefined); 
     setSequenceType("Engajamento puro");
     setSequenceDate("");
   };
@@ -222,7 +227,14 @@ const Sequences = () => {
     return theme ? theme.name : "N/A";
   };
 
-  const hasThemes = themes && themes.length > 0;
+  const handleOpenCreateDialog = () => {
+    if (hasThemes) {
+      resetForm();
+      setIsDialogOpen(true);
+    } else {
+      setIsThemeWarningOpen(true);
+    }
+  };
 
   if (isLoadingSequences || isLoadingThemes) return <div className="text-center">Carregando sequências...</div>;
   if (sequencesError) return <div className="text-center text-destructive">Erro ao carregar sequências: {sequencesError.message}</div>;
@@ -231,23 +243,18 @@ const Sequences = () => {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-end">
+        {/* Botão que decide qual diálogo abrir */}
+        <Button onClick={handleOpenCreateDialog}>
+          <PlusCircle className="mr-2 h-4 w-4" /> Criar nova Sequência
+        </Button>
+        
+        {/* Diálogo de Criação de Sequência (só abre se houver temas) */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={resetForm} disabled={!hasThemes}>
-              <PlusCircle className="mr-2 h-4 w-4" /> Criar nova Sequência
-            </Button>
-          </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Criar Nova Sequência</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              {!hasThemes && (
-                <div className="col-span-4 text-center p-4 bg-yellow-100 text-yellow-800 rounded-md">
-                  Você precisa cadastrar pelo menos um tema antes de criar uma sequência.
-                  <Link to="/themes" className="text-blue-600 hover:underline ml-2">Ir para Temas</Link>
-                </div>
-              )}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="name" className="text-right">
                   Nome
@@ -257,7 +264,6 @@ const Sequences = () => {
                   value={sequenceName}
                   onChange={(e) => setSequenceName(e.target.value)}
                   className="col-span-3"
-                  disabled={!hasThemes}
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
@@ -267,7 +273,6 @@ const Sequences = () => {
                 <Select 
                   value={selectedThemeId} 
                   onValueChange={setSelectedThemeId}
-                  disabled={!hasThemes}
                 >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Selecione um tema" />
@@ -288,7 +293,6 @@ const Sequences = () => {
                 <Select 
                   value={sequenceType} 
                   onValueChange={(value: Sequence["type"]) => setSequenceType(value)}
-                  disabled={!hasThemes}
                 >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Selecione o tipo de sequência" />
@@ -312,12 +316,11 @@ const Sequences = () => {
                   value={sequenceDate}
                   onChange={(e) => setSequenceDate(e.target.value)}
                   className="col-span-3"
-                  disabled={!hasThemes}
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" onClick={handleCreateSequence} disabled={!hasThemes}>
+              <Button type="submit" onClick={handleCreateSequence}>
                 Salvar
               </Button>
             </DialogFooter>
@@ -406,6 +409,26 @@ const Sequences = () => {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* AlertDialog for Theme Warning */}
+      <AlertDialog open={isThemeWarningOpen} onOpenChange={setIsThemeWarningOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Temas Necessários</AlertDialogTitle>
+            <AlertDialogDescription>
+              Para criar uma nova sequência, você precisa ter pelo menos um tema cadastrado. Por favor, crie um tema primeiro.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Link to="/themes" onClick={() => setIsThemeWarningOpen(false)}>
+                Ir para Temas
+              </Link>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

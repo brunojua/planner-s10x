@@ -314,6 +314,14 @@ const SequenceDetail = () => {
     });
   };
 
+  // Função auxiliar para formatar a data para exibição
+  const formatDate = (dateString: string) => {
+    // Se a data for salva como 'YYYY-MM-DD', podemos criar uma data local diretamente
+    // para evitar a mudança de fuso horário.
+    const date = new Date(dateString + 'T00:00:00');
+    return date.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+  };
+
   return (
     <div className="flex flex-col gap-6">
       {/* Título removido: <h1 className="text-3xl font-bold tracking-tight mb-6">Detalhes da Sequência: {sequence.name}</h1> */}
@@ -337,7 +345,7 @@ const SequenceDetail = () => {
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">Data:</p>
-            <p className="text-lg">{new Date(sequence.date).toLocaleDateString()}</p>
+            <p className="text-lg">{formatDate(sequence.date)}</p>
           </div>
         </CardContent>
       </Card>

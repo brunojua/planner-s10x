@@ -116,7 +116,7 @@ export function Layout({ children }: LayoutProps) {
             {isThemesPage && <ThemeCountHeader />} {/* Renderiza o badge apenas na página de Temas */}
           </h1>
         </header>
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 overflow-y-auto">
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 overflow-y-auto bg-content-background">
           {children}
         </main>
       </div>

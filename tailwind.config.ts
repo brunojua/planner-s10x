@@ -62,6 +62,9 @@ export default {
           border: "hsl(var(--sidebar-border))", // Corrigido para usar hsl()
           ring: "hsl(var(--sidebar-ring))", // Corrigido para usar hsl()
         },
+        content: {
+          background: "hsl(var(--content-background))", // Novo fundo de conteúdo
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

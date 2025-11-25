@@ -7,6 +7,8 @@
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
+    --content-background: 0 0% 98%; /* Cinza claro para o conteúdo principal */
+
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
 
@@ -48,6 +50,8 @@
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
+
+    --content-background: 222.2 84% 4.9%; /* Mantém escuro no dark mode, ou ajuste se necessário */
 
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;

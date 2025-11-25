@@ -144,9 +144,13 @@ const Sequences = () => {
       if (userError || !user?.user?.id) {
         throw new Error("User not authenticated");
       }
+      
+      // Garante que a data seja salva como string YYYY-MM-DD
+      const dateString = newSequence.date; 
+
       const { data, error } = await supabase
         .from("sequences")
-        .insert({ ...newSequence, user_id: user.user.id })
+        .insert({ ...newSequence, user_id: user.user.id, date: dateString })
         .select()
         .single();
       if (error) throw error;
@@ -197,7 +201,7 @@ const Sequences = () => {
       name: sequenceName,
       theme_id: selectedThemeId,
       type: sequenceType,
-      date: sequenceDate,
+      date: sequenceDate, // sequenceDate já está no formato YYYY-MM-DD
     });
     resetForm();
     setIsDialogOpen(false);
@@ -234,6 +238,14 @@ const Sequences = () => {
     } else {
       setIsThemeWarningOpen(true);
     }
+  };
+
+  // Função auxiliar para formatar a data para exibição
+  const formatDate = (dateString: string) => {
+    // Se a data for salva como 'YYYY-MM-DD', podemos criar uma data local diretamente
+    // para evitar a mudança de fuso horário.
+    const date = new Date(dateString + 'T00:00:00');
+    return date.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
   };
 
   if (isLoadingSequences || isLoadingThemes) return <div className="text-center">Carregando sequências...</div>;
@@ -346,7 +358,7 @@ const Sequences = () => {
                 <TableCell className="font-medium">{sequence.name}</TableCell>
                 <TableCell>{getThemeName(sequence.theme_id)}</TableCell>
                 <TableCell>{sequence.type}</TableCell>
-                <TableCell>{new Date(sequence.date).toLocaleDateString()}</TableCell>
+                <TableCell>{formatDate(sequence.date)}</TableCell>
                 <TableCell>{sequence.retencao.toFixed(1)}%</TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="sm" asChild>
